@@ -101,24 +101,26 @@ jobs:
       - name: Release on Zode
         run: scripts/release.sh "${{ matrix.line }}" "${{ steps.version.outputs.version }}"
 
-      - name: Write the software lists
-        run: scripts/update-docs.sh "${{ matrix.line }}" "${{ steps.version.outputs.version }}"
-
-      - name: Commit and push
+      # Regenerate the lists on top of the latest main on every try, so a
+      # line released just before this one never conflicts on README.md.
+      - name: Write the software lists, commit and push
         env:
           LINE: ${{ matrix.line }}
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add README.md "images/$LINE/README.md"
-          if git diff --cached --quiet; then
-            echo "Software lists unchanged"
-            exit 0
-          fi
-          git commit -m "docs: software list for $LINE $VERSION [skip ci]"
           for i in 1 2 3 4 5; do
-            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            git fetch -q origin main
+            git reset -q --hard origin/main
+            scripts/update-docs.sh "$LINE" "$VERSION"
+            git add README.md "images/$LINE/README.md"
+            if git diff --cached --quiet; then
+              echo "Software lists unchanged"
+              exit 0
+            fi
+            git commit -q -m "docs: software list for $LINE $VERSION [skip ci]"
+            git push origin HEAD:main && exit 0
             sleep $((i * 5))
           done
           echo "::error::could not push the software lists"
