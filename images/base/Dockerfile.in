@@ -1,0 +1,37 @@
+# base: the Zode base image plus a few small extras, for agent sandboxes
+# (`zode new --image zode/base`). PostgreSQL and Redis keep running here:
+# agents rely on them.
+#
+# FROM zode: each RUN runs in the build VM with `bash -lc` as root. COPY and
+# ADD are refused, so everything is inline.
+FROM zode
+
+# Set by the publish workflow to the release version (YYYYMMDD.run).
+ARG IMAGE_VERSION=dev
+ARG YQ_VERSION=4.54.3
+ARG YQ_SHA256=129534601871538efe0ba4c5e62a34fb1d5f469bcb975c4fddeb467d82974973
+
+ENV ZODE_IMAGE_VERSION=${IMAGE_VERSION}
+
+RUN <<'ZODE_STEP'
+set -euxo pipefail
+for i in 1 2 3 4 5; do apt-get update && break; sleep $((i * 10)); done
+apt-get install -y --no-install-recommends zstd git-lfs
+git lfs install --system
+
+curl -fsSL --retry 6 --retry-delay 5 --retry-all-errors --connect-timeout 20 -o /tmp/yq \
+  "https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64"
+echo "$YQ_SHA256  /tmp/yq" | sha256sum -c -
+install -m 0755 /tmp/yq /usr/local/bin/yq
+rm -f /tmp/yq
+yq --version | grep -q "${YQ_VERSION}"
+
+# Same as the base image: sandboxes use the mirror, lists are fetched on demand.
+apt-get clean
+rm -rf /var/lib/apt/lists/*
+ZODE_STEP
+
+@SOFTWARE_REPORT_STEP@
+
+# Last step: print the software manifest (one ZODE-MANIFEST line).
+RUN /usr/local/bin/zode-software-report

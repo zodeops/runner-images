@@ -1,0 +1,4 @@
+# Local scratch from running the scripts
+manifest.json
+*.tmp
+.DS_Store

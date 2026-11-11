@@ -1,0 +1,27 @@
+# Zode runs each RUN with `bash -lc` in a VM built FROM zode, so rules that
+# assume Docker's /bin/sh, a tagged registry image or a SHELL instruction
+# (Zode refuses SHELL) do not apply. The RUN bodies are checked as bash by
+# scripts/lint-steps.sh instead.
+ignored:
+  - DL3003 # cd inside a step: steps are scripts, WORKDIR is not needed
+  - DL3006 # FROM zode is Zode's base image, not a registry tag
+  - DL3008 # apt packages come from the node's mirror of Ubuntu 24.04; not pinned
+  - DL3009 # the CI line keeps apt lists on purpose, like GitHub's runners
+  - DL4006 # steps run with bash and set -o pipefail themselves
+  - SC3010
+  - SC3014
+  - SC3015
+  - SC3020
+  - SC3024
+  - SC3028
+  - SC3030
+  - SC3037
+  - SC3040
+  - SC3043
+  - SC3044
+  - SC3045
+  - SC3046
+  - SC3053
+  - SC3054
+  - SC3057
+  - SC3060

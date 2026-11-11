@@ -1,0 +1,60 @@
+name: check
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: zode-2x4
+    env:
+      HADOLINT_IMAGE: hadolint/hadolint:v2.15.1
+      ACTIONLINT_IMAGE: rhysd/actionlint:1.7.12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install shellcheck
+        run: |
+          if ! command -v shellcheck >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends shellcheck
+          fi
+          shellcheck --version
+
+      - name: shellcheck
+        run: shellcheck scripts/*.sh
+
+      - name: Rendered Dockerfiles match their templates
+        run: scripts/render.sh --check
+
+      - name: shellcheck the RUN steps as bash
+        run: scripts/lint-steps.sh
+
+      - name: hadolint
+        run: |
+          for f in images/*/Dockerfile; do
+            echo "$f"
+            docker run --rm -i -v "$PWD/.hadolint.yaml:/hadolint.yaml:ro" "$HADOLINT_IMAGE" \
+              hadolint --config /hadolint.yaml - < "$f"
+          done
+
+      - name: actionlint
+        run: docker run --rm -v "$PWD:/repo" -w /repo "$ACTIONLINT_IMAGE" -color
+
+      - name: Software report smoke test
+        run: |
+          out=$(bash scripts/software-report.sh)
+          printf '%s\n' "$out"
+          [ "$(printf '%s\n' "$out" | wc -l)" -eq 1 ] || { echo "expected one line"; exit 1; }
+          case "$out" in "ZODE-MANIFEST {"*) ;; *) echo "missing the ZODE-MANIFEST prefix"; exit 1 ;; esac
+          printf '%s\n' "${out#ZODE-MANIFEST }" > manifest.json
+          jq -e '
+            (.os | type == "string" and length > 0)
+            and (.groups | type == "array" and length > 0)
+            and all(.groups[]; (.name | type == "string") and (.items | type == "array")
+              and all(.items[]; (.name | type == "string") and (.version | type == "string" and length > 0)))
+            and ((.env // {}) | type == "object")
+          ' manifest.json
+          scripts/manifest-to-md.sh --manifest manifest.json

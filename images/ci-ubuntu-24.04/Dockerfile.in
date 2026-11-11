@@ -1,0 +1,207 @@
+# ci-ubuntu-24.04: the Zode base image plus the toolset GitHub-hosted
+# ubuntu-24.04 runners carry, so `runs-on: zode-<size>` jobs behave like
+# `runs-on: ubuntu-24.04`. Every `runs-on: zode-*` job uses this line.
+#
+# FROM zode: each RUN runs in the build VM with `bash -lc` as root. COPY and
+# ADD are refused, so everything is inline. ARGs are build-time only; ENV is
+# kept for every login shell and in /etc/environment.
+FROM zode
+
+# Set by the publish workflow to the release version (YYYYMMDD.run).
+ARG IMAGE_VERSION=dev
+# The node's package mirror (apt, npm, PyPI, Docker Hub).
+ARG ZODE_MIRROR=http://172.16.0.1:5000
+
+# AWS CLI v2. AWS publishes a PGP signature, not a checksum: this sha256 is of
+# the zip whose signature checked out against the AWS CLI Team key.
+ARG AWS_CLI_VERSION=2.40.1
+ARG AWS_CLI_SHA256=fddb097a8ea197dc9beed9e4426ef99aded612a52df64581e079b6e8817e1d24
+# Kubernetes tools. Checksums as published by each project.
+ARG KUBECTL_VERSION=1.37.2
+ARG KUBECTL_SHA256=c04487523e7aa7d1493f7808174c899db93d7a9cf57531420cd76b9bd415f8f4
+ARG HELM_VERSION=3.22.1
+ARG HELM_SHA256=896cf63684a42a723d61c980369d6e588330927deb13676ca0d85006dd6da0ea
+ARG KUSTOMIZE_VERSION=5.8.3
+ARG KUSTOMIZE_SHA256=cb9e31198d3f63b44848bd0afc4c8efc56e6cfef9c93a4a39a211940e6decd61
+ARG YQ_VERSION=4.54.3
+ARG YQ_SHA256=129534601871538efe0ba4c5e62a34fb1d5f469bcb975c4fddeb467d82974973
+# Eclipse Temurin JDKs (github.com/adoptium release assets).
+ARG TEMURIN_17_VERSION=17.0.21+9
+ARG TEMURIN_17_SHA256=8b9b611d917e3dfd8419d3566b5949226f69b052fed7e109c1368add1dfe8711
+ARG TEMURIN_21_VERSION=21.0.13+9
+ARG TEMURIN_21_SHA256=d7f5d5cf865a2902b70ff549b97586a7d3f234e016f041ab447ea740c7d66d1c
+# Hosted tool cache: actions/node-versions and actions/python-versions
+# release assets, the same builds GitHub's runners carry. RELEASE is the tag.
+ARG NODE_22_RELEASE=22.23.4-39619033003
+ARG NODE_22_SHA256=05c182e45510cb6c5dcf62b208abffbafe9af22b73101cbf5f14d15c8dc5ff0f
+ARG NODE_24_RELEASE=24.22.2-40806817314
+ARG NODE_24_SHA256=8c19ab1e5bd4432f3d8526406cc9af2f70eac3290175c48818e98c787023a7d4
+ARG PYTHON_312_RELEASE=3.12.16-40260402378
+ARG PYTHON_312_SHA256=dec61ed20cd3e71143f1642ef9966945dea8ae4f3e96b306205a710da4f2191a
+ARG PYTHON_313_RELEASE=3.13.18-40336726450
+ARG PYTHON_313_SHA256=683005a1465d94d40045f6a1a6eb316885b5f08d3360f7922b44ef58a14a9eed
+
+ENV ImageOS=ubuntu24 \
+    ImageVersion=${IMAGE_VERSION} \
+    RUNNER_TOOL_CACHE=/opt/hostedtoolcache \
+    AGENT_TOOLSDIRECTORY=/opt/hostedtoolcache \
+    JAVA_HOME_17_X64=/usr/lib/jvm/temurin-17-jdk-amd64 \
+    JAVA_HOME_21_X64=/usr/lib/jvm/temurin-21-jdk-amd64 \
+    JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64
+
+# Ubuntu packages, from the mirror the base image points apt at. The package
+# lists are kept so `sudo apt-get install` works in a job, as on GitHub.
+RUN <<'ZODE_STEP'
+set -euxo pipefail
+for i in 1 2 3 4 5; do apt-get update && break; sleep $((i * 10)); done
+apt-get install -y --no-install-recommends \
+  sudo zstd git-lfs unzip zip rsync openssh-client xz-utils ca-certificates curl jq
+git lfs install --system
+ZODE_STEP
+
+# AWS CLI v2 and the Kubernetes tools, each checked against its sha256.
+RUN <<'ZODE_STEP'
+set -euxo pipefail
+dl() { curl -fsSL --retry 6 --retry-delay 5 --retry-all-errors --connect-timeout 20 -o "$2" "$1"; }
+check() { echo "$1  $2" | sha256sum -c -; }
+work=$(mktemp -d)
+cd "$work"
+
+dl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWS_CLI_VERSION}.zip" awscli.zip
+check "$AWS_CLI_SHA256" awscli.zip
+unzip -q awscli.zip
+./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
+aws --version | grep -q "aws-cli/${AWS_CLI_VERSION} "
+
+dl "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl" kubectl
+check "$KUBECTL_SHA256" kubectl
+install -m 0755 kubectl /usr/local/bin/kubectl
+kubectl version --client | grep -q "v${KUBECTL_VERSION}"
+
+dl "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz" helm.tar.gz
+check "$HELM_SHA256" helm.tar.gz
+tar -xzf helm.tar.gz linux-amd64/helm
+install -m 0755 linux-amd64/helm /usr/local/bin/helm
+helm version --short | grep -q "v${HELM_VERSION}"
+
+dl "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" kustomize.tar.gz
+check "$KUSTOMIZE_SHA256" kustomize.tar.gz
+tar -xzf kustomize.tar.gz kustomize
+install -m 0755 kustomize /usr/local/bin/kustomize
+kustomize version | grep -q "${KUSTOMIZE_VERSION}"
+
+dl "https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64" yq
+check "$YQ_SHA256" yq
+install -m 0755 yq /usr/local/bin/yq
+yq --version | grep -q "${YQ_VERSION}"
+
+cd /
+rm -rf "$work"
+ZODE_STEP
+
+# Temurin 17 and 21 in the tool cache (where actions/setup-java looks) and
+# under /usr/lib/jvm (GitHub's JAVA_HOME_*_X64 paths). 17 is the default.
+RUN <<'ZODE_STEP'
+set -euxo pipefail
+dl() { curl -fsSL --retry 6 --retry-delay 5 --retry-all-errors --connect-timeout 20 -o "$2" "$1"; }
+mkdir -p "$RUNNER_TOOL_CACHE/Java_Temurin-Hotspot_jdk" /usr/lib/jvm
+jdk() { # MAJOR VERSION SHA256
+  local major=$1 v=$2 sum=$3
+  local file="OpenJDK${major}U-jdk_x64_linux_hotspot_${v/+/_}.tar.gz"
+  local dest="$RUNNER_TOOL_CACHE/Java_Temurin-Hotspot_jdk/${v/+/-}/x64"
+  dl "https://github.com/adoptium/temurin${major}-binaries/releases/download/jdk-${v/+/%2B}/$file" "/tmp/$file"
+  echo "$sum  /tmp/$file" | sha256sum -c -
+  mkdir -p "$dest"
+  tar -xzf "/tmp/$file" -C "$dest" --strip-components=1
+  rm -f "/tmp/$file"
+  touch "$(dirname "$dest")/x64.complete"
+  ln -sfn "$dest" "/usr/lib/jvm/temurin-${major}-jdk-amd64"
+  "/usr/lib/jvm/temurin-${major}-jdk-amd64/bin/java" -version 2>&1 | grep -q "\"${v%+*}\""
+}
+jdk 17 "$TEMURIN_17_VERSION" "$TEMURIN_17_SHA256"
+jdk 21 "$TEMURIN_21_VERSION" "$TEMURIN_21_SHA256"
+# java, javac, jar, ... on PATH from the default JDK.
+for b in "$JAVA_HOME"/bin/*; do ln -sf "$b" "/usr/local/bin/$(basename "$b")"; done
+java -version 2>&1 | grep -q "\"${TEMURIN_17_VERSION%+*}\""
+ZODE_STEP
+
+# Node.js and Python in the hosted tool cache, laid out the way
+# actions/setup-node and actions/setup-python expect, so they find them
+# without a download.
+RUN <<'ZODE_STEP'
+set -euxo pipefail
+dl() { curl -fsSL --retry 6 --retry-delay 5 --retry-all-errors --connect-timeout 20 -o "$2" "$1"; }
+cache_node() { # RELEASE SHA256
+  local v=${1%%-*}
+  local dest="$RUNNER_TOOL_CACHE/node/$v/x64"
+  dl "https://github.com/actions/node-versions/releases/download/$1/node-$v-linux-x64.tar.gz" /tmp/node.tar.gz
+  echo "$2  /tmp/node.tar.gz" | sha256sum -c -
+  rm -rf "$dest"
+  mkdir -p "$dest"
+  tar -xzf /tmp/node.tar.gz -C "$dest"
+  rm -f /tmp/node.tar.gz
+  touch "$RUNNER_TOOL_CACHE/node/$v/x64.complete"
+  [ "$("$dest/bin/node" --version)" = "v$v" ]
+}
+cache_node "$NODE_22_RELEASE" "$NODE_22_SHA256"
+cache_node "$NODE_24_RELEASE" "$NODE_24_SHA256"
+
+# setup.sh (from actions/python-versions) installs into
+# $AGENT_TOOLSDIRECTORY/Python/<version>/x64 and upgrades pip; pip goes
+# through the mirror.
+export PIP_INDEX_URL="$ZODE_MIRROR/pypi/simple/" PIP_TRUSTED_HOST="${ZODE_MIRROR#http://}"
+PIP_TRUSTED_HOST=${PIP_TRUSTED_HOST%%:*}
+cache_python() { # RELEASE SHA256
+  local v=${1%%-*}
+  local work
+  work=$(mktemp -d)
+  dl "https://github.com/actions/python-versions/releases/download/$1/python-$v-linux-24.04-x64.tar.gz" "$work/python.tar.gz"
+  echo "$2  $work/python.tar.gz" | sha256sum -c -
+  mkdir "$work/src"
+  tar -xzf "$work/python.tar.gz" -C "$work/src"
+  (cd "$work/src" && bash ./setup.sh)
+  rm -rf "$work"
+  [ -e "$RUNNER_TOOL_CACHE/Python/$v/x64.complete" ]
+  "$RUNNER_TOOL_CACHE/Python/$v/x64/bin/python3" --version | grep -q "Python $v"
+}
+cache_python "$PYTHON_312_RELEASE" "$PYTHON_312_SHA256"
+cache_python "$PYTHON_313_RELEASE" "$PYTHON_313_SHA256"
+ZODE_STEP
+
+# Behave like a GitHub runner:
+# - PostgreSQL and Redis installed but stopped and disabled, so service
+#   containers can bind 5432 and 6379;
+# - no DATABASE_URL / REDIS_URL pointing at those stopped servers;
+# - the runner reads ImageOS, the tool cache and JAVA_HOME from its .env,
+#   because Zode starts it with a bare environment.
+RUN <<'ZODE_STEP'
+set -euxo pipefail
+systemctl disable --now postgresql redis-server
+systemctl stop 'postgresql@*' || true
+sed -i '/^DATABASE_URL=/d; /^REDIS_URL=/d' /etc/environment
+sed -i '/DATABASE_URL=/d; /REDIS_URL=/d' /etc/profile.d/zode.sh
+if ss -ltnH | grep -E ':(5432|6379)[[:space:]]'; then
+  echo "5432 or 6379 is still in use" >&2
+  exit 1
+fi
+if [ -d /opt/zode-runner ]; then
+  touch /opt/zode-runner/.env
+  sed -i -E "/^(ImageOS|ImageVersion|RUNNER_TOOL_CACHE|AGENT_TOOLSDIRECTORY|JAVA_HOME|JAVA_HOME_17_X64|JAVA_HOME_21_X64)=/d" /opt/zode-runner/.env
+  {
+    echo "ImageOS=$ImageOS"
+    echo "ImageVersion=$ImageVersion"
+    echo "RUNNER_TOOL_CACHE=$RUNNER_TOOL_CACHE"
+    echo "AGENT_TOOLSDIRECTORY=$AGENT_TOOLSDIRECTORY"
+    echo "JAVA_HOME=$JAVA_HOME"
+    echo "JAVA_HOME_17_X64=$JAVA_HOME_17_X64"
+    echo "JAVA_HOME_21_X64=$JAVA_HOME_21_X64"
+  } >> /opt/zode-runner/.env
+fi
+apt-get clean
+rm -rf /tmp/* /root/.cache/pip
+ZODE_STEP
+
+@SOFTWARE_REPORT_STEP@
+
+# Last step: print the software manifest (one ZODE-MANIFEST line).
+RUN /usr/local/bin/zode-software-report

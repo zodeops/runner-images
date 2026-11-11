@@ -1,0 +1,125 @@
+name: publish
+
+# Builds a release of each changed line on Zode, waits until it is published
+# everywhere, then writes the software lists back to the repo.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "images/**"
+      - "scripts/**"
+  workflow_dispatch:
+    inputs:
+      line:
+        description: "Line to release (a directory under images/); empty for every line"
+        required: false
+        default: ""
+
+permissions:
+  id-token: write
+  contents: write
+
+# One publish run at a time; a newer run waits instead of cancelling.
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: zode-2x4
+    outputs:
+      lines: ${{ steps.lines.outputs.lines }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Check the rendered Dockerfiles
+        run: scripts/render.sh --check
+
+      - name: Pick the lines to release
+        id: lines
+        env:
+          EVENT: ${{ github.event_name }}
+          INPUT_LINE: ${{ inputs.line }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        run: |
+          all=$(find images -mindepth 2 -maxdepth 2 -name Dockerfile | cut -d/ -f2 | sort)
+          if [ "$EVENT" = workflow_dispatch ]; then
+            if [ -z "$INPUT_LINE" ]; then
+              lines=$all
+            elif printf '%s\n' "$all" | grep -qx -- "$INPUT_LINE"; then
+              lines=$INPUT_LINE
+            else
+              echo "::error::no line $INPUT_LINE under images/"
+              exit 1
+            fi
+          elif [ -z "$BEFORE" ] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            # New branch or unknown base: release everything.
+            lines=$all
+          else
+            changed=$(git diff --name-only "$BEFORE" "$AFTER")
+            if printf '%s\n' "$changed" | grep -qx 'scripts/software-report.sh'; then
+              # The report is inlined in every Dockerfile.
+              lines=$all
+            else
+              # Only a change to a line's Dockerfile builds it; its README
+              # is written by this workflow.
+              lines=$(printf '%s\n' "$changed" | sed -nE 's#^images/([^/]+)/Dockerfile(\.in)?$#\1#p' | sort -u)
+            fi
+          fi
+          json=$(printf '%s\n' "$lines" | jq -Rnc '[inputs | select(length > 0)]')
+          echo "lines=$json" >> "$GITHUB_OUTPUT"
+          echo "Lines to release: $json"
+
+  release:
+    needs: plan
+    if: needs.plan.outputs.lines != '[]'
+    runs-on: zode-2x4
+    # Each node builds one official image at a time: release lines in turn.
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        line: ${{ fromJSON(needs.plan.outputs.lines) }}
+    # A release can take a while: one build per node and size, in turn.
+    timeout-minutes: 200
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Version
+        id: version
+        run: |
+          version="$(date -u +%Y%m%d).${{ github.run_number }}"
+          # A re-run of the same run needs its own version (they are unique).
+          if [ "${{ github.run_attempt }}" != 1 ]; then version="$version.${{ github.run_attempt }}"; fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Releasing ${{ matrix.line }} $version"
+
+      - name: Release on Zode
+        run: scripts/release.sh "${{ matrix.line }}" "${{ steps.version.outputs.version }}"
+
+      - name: Write the software lists
+        run: scripts/update-docs.sh "${{ matrix.line }}" "${{ steps.version.outputs.version }}"
+
+      - name: Commit and push
+        env:
+          LINE: ${{ matrix.line }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md "images/$LINE/README.md"
+          if git diff --cached --quiet; then
+            echo "Software lists unchanged"
+            exit 0
+          fi
+          git commit -m "docs: software list for $LINE $VERSION [skip ci]"
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            sleep $((i * 5))
+          done
+          echo "::error::could not push the software lists"
+          exit 1

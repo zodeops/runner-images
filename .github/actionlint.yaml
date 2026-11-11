@@ -1,0 +1,8 @@
+# Zode runner labels (runs-on: zode or zode-<vcpus>x<ram GB>).
+self-hosted-runner:
+  labels:
+    - zode
+    - zode-2x4
+    - zode-4x8
+    - zode-8x16
+    - zode-16x32
