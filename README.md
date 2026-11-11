@@ -49,7 +49,9 @@ The lists below come from each image's own report
 them after every release.
 
 <!-- software:start -->
-No release is published yet.
+| Line | Use it with | Version | Published | Software |
+| --- | --- | --- | --- | --- |
+| `base` | `zode/base` | 20261111.1 | 2026-11-11 | [images/base](images/base/README.md) |
 <!-- software:end -->
 
 ## How a release works
