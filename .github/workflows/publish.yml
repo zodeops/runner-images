@@ -8,6 +8,7 @@ on:
     branches: [main]
     paths:
       - "images/**"
+      - "!images/*/README.md"
       - "scripts/**"
   workflow_dispatch:
     inputs:
