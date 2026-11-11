@@ -1,6 +1,6 @@
 # base
 
-Use it with `zode/base`. Version 20261111.1, published 2026-11-11 from commit [6085480](https://github.com/zodeops/runner-images/tree/60854805ac33116fde16f81d01170e377333b352/images/base).
+Use it with `zode/base`. Version 20261111.2, published 2026-11-11 from commit [571eb07](https://github.com/zodeops/runner-images/tree/571eb0752d402e84cfaba23babd6ed736206f4ce/images/base).
 Sizes: 2x4, 4x8, 8x16, 16x32.
 
 Operating system: Ubuntu 24.04.5 LTS.
@@ -87,5 +87,5 @@ Written by the publish workflow from the software report in the image
 | Name | Value |
 | --- | --- |
 | `CHROME_PATH` | `/usr/bin/google-chrome` |
-| `ZODE_IMAGE_VERSION` | `20261111.1` |
+| `ZODE_IMAGE_VERSION` | `20261111.2` |
 | `PLAYWRIGHT_BROWSERS_PATH` | `/ms-playwright` |
