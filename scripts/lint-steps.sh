@@ -17,6 +17,12 @@ for df in images/*/Dockerfile; do
 done
 for f in "$work"/*.sh; do
   [ -e "$f" ] || continue
+  # Steps run with pipefail: `cmd | grep -q` exits at the first match, cmd
+  # gets SIGPIPE (141) and the step fails. Use `| grep ... >/dev/null`.
+  if grep -nE '\|[[:space:]]*grep[[:space:]]+(-[a-zA-Z]*q|--quiet)' "$f" >&2; then
+    echo "^ in $(basename "$f" .sh): pipe into grep -q fails under pipefail" >&2
+    status=1
+  fi
   if ! shellcheck -s bash -e SC2154 "$f"; then
     echo "^ in $(basename "$f" .sh)" >&2
     status=1

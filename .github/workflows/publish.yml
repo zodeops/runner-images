@@ -50,7 +50,7 @@ jobs:
           if [ "$EVENT" = workflow_dispatch ]; then
             if [ -z "$INPUT_LINE" ]; then
               lines=$all
-            elif printf '%s\n' "$all" | grep -qx -- "$INPUT_LINE"; then
+            elif printf '%s\n' "$all" | grep -x -- "$INPUT_LINE" >/dev/null; then
               lines=$INPUT_LINE
             else
               echo "::error::no line $INPUT_LINE under images/"
@@ -61,7 +61,7 @@ jobs:
             lines=$all
           else
             changed=$(git diff --name-only "$BEFORE" "$AFTER")
-            if printf '%s\n' "$changed" | grep -qx 'scripts/software-report.sh'; then
+            if printf '%s\n' "$changed" | grep -x 'scripts/software-report.sh' >/dev/null; then
               # The report is inlined in every Dockerfile.
               lines=$all
             else

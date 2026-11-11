@@ -71,29 +71,29 @@ dl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWS_CLI_VERSION}.zip"
 check "$AWS_CLI_SHA256" awscli.zip
 unzip -q awscli.zip
 ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
-aws --version | grep -q "aws-cli/${AWS_CLI_VERSION} "
+aws --version | grep "aws-cli/${AWS_CLI_VERSION} " >/dev/null
 
 dl "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl" kubectl
 check "$KUBECTL_SHA256" kubectl
 install -m 0755 kubectl /usr/local/bin/kubectl
-kubectl version --client | grep -q "v${KUBECTL_VERSION}"
+kubectl version --client | grep "v${KUBECTL_VERSION}" >/dev/null
 
 dl "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz" helm.tar.gz
 check "$HELM_SHA256" helm.tar.gz
 tar -xzf helm.tar.gz linux-amd64/helm
 install -m 0755 linux-amd64/helm /usr/local/bin/helm
-helm version --short | grep -q "v${HELM_VERSION}"
+helm version --short | grep "v${HELM_VERSION}" >/dev/null
 
 dl "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" kustomize.tar.gz
 check "$KUSTOMIZE_SHA256" kustomize.tar.gz
 tar -xzf kustomize.tar.gz kustomize
 install -m 0755 kustomize /usr/local/bin/kustomize
-kustomize version | grep -q "${KUSTOMIZE_VERSION}"
+kustomize version | grep "${KUSTOMIZE_VERSION}" >/dev/null
 
 dl "https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64" yq
 check "$YQ_SHA256" yq
 install -m 0755 yq /usr/local/bin/yq
-yq --version | grep -q "${YQ_VERSION}"
+yq --version | grep "${YQ_VERSION}" >/dev/null
 
 cd /
 rm -rf "$work"
@@ -116,13 +116,13 @@ jdk() { # MAJOR VERSION SHA256
   rm -f "/tmp/$file"
   touch "$(dirname "$dest")/x64.complete"
   ln -sfn "$dest" "/usr/lib/jvm/temurin-${major}-jdk-amd64"
-  "/usr/lib/jvm/temurin-${major}-jdk-amd64/bin/java" -version 2>&1 | grep -q "\"${v%+*}\""
+  "/usr/lib/jvm/temurin-${major}-jdk-amd64/bin/java" -version 2>&1 | grep "\"${v%+*}\"" >/dev/null
 }
 jdk 17 "$TEMURIN_17_VERSION" "$TEMURIN_17_SHA256"
 jdk 21 "$TEMURIN_21_VERSION" "$TEMURIN_21_SHA256"
 # java, javac, jar, ... on PATH from the default JDK.
 for b in "$JAVA_HOME"/bin/*; do ln -sf "$b" "/usr/local/bin/$(basename "$b")"; done
-java -version 2>&1 | grep -q "\"${TEMURIN_17_VERSION%+*}\""
+java -version 2>&1 | grep "\"${TEMURIN_17_VERSION%+*}\"" >/dev/null
 ZODE_STEP
 
 # Node.js and Python in the hosted tool cache, laid out the way
@@ -162,7 +162,7 @@ cache_python() { # RELEASE SHA256
   (cd "$work/src" && bash ./setup.sh)
   rm -rf "$work"
   [ -e "$RUNNER_TOOL_CACHE/Python/$v/x64.complete" ]
-  "$RUNNER_TOOL_CACHE/Python/$v/x64/bin/python3" --version | grep -q "Python $v"
+  "$RUNNER_TOOL_CACHE/Python/$v/x64/bin/python3" --version | grep "Python $v" >/dev/null
 }
 cache_python "$PYTHON_312_RELEASE" "$PYTHON_312_SHA256"
 cache_python "$PYTHON_313_RELEASE" "$PYTHON_313_SHA256"
