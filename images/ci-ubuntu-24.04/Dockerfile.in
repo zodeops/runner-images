@@ -128,6 +128,15 @@ export DEBIAN_FRONTEND=noninteractive
 # command-not-found's apt hook can hang `apt-get update` (its helper blocks
 # on a full pipe); CI has no use for it.
 rm -f /etc/apt/apt.conf.d/50command-not-found
+# The daily apt timers fire in a build VM (and in a restored runner) and
+# hold the apt lock: stop and mask them, wait for a run in progress, and
+# let every later apt call wait for the lock instead of failing.
+systemctl stop apt-daily.timer apt-daily-upgrade.timer apt-daily.service apt-daily-upgrade.service \
+  unattended-upgrades.service 2>/dev/null || true
+systemctl mask apt-daily.service apt-daily-upgrade.service apt-daily.timer apt-daily-upgrade.timer \
+  unattended-upgrades.service
+for _ in $(seq 120); do pgrep -x 'apt-get|apt|unattended-upgr|dpkg' >/dev/null || break; sleep 2; done
+printf 'DPkg::Lock::Timeout "600";\n' >/etc/apt/apt.conf.d/90zode-lock-timeout
 for i in 1 2 3 4 5; do apt-get update && break; sleep $((i * 10)); done
 # MySQL: root's password is root, as on GitHub.
 echo "mysql-server mysql-server/root_password password root" | debconf-set-selections
@@ -469,8 +478,7 @@ fi
 ZODE_STEP
 
 # Behave like a GitHub runner:
-# - no background apt runs: a restored VM fires the daily apt timers and
-#   holds the apt lock while a job runs `sudo apt-get install`;
+# - no background apt runs (masked in the first step);
 # - PostgreSQL, MySQL and Redis installed but stopped and disabled, so
 #   service containers can bind 5432, 3306 and 6379;
 # - no DATABASE_URL / REDIS_URL pointing at those stopped servers;
@@ -479,8 +487,6 @@ ZODE_STEP
 RUN <<'ZODE_STEP'
 set -euxo pipefail
 systemctl disable --now postgresql redis-server mysql
-systemctl disable --now apt-daily.timer apt-daily-upgrade.timer unattended-upgrades.service || true
-systemctl mask apt-daily.service apt-daily-upgrade.service unattended-upgrades.service
 systemctl stop 'postgresql@*' || true
 sed -i '/^DATABASE_URL=/d; /^REDIS_URL=/d' /etc/environment
 sed -i '/DATABASE_URL=/d; /REDIS_URL=/d' /etc/profile.d/zode.sh
