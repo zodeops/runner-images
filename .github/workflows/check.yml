@@ -58,3 +58,10 @@ jobs:
             and ((.env // {}) | type == "object")
           ' manifest.json
           scripts/manifest-to-md.sh --manifest manifest.json
+
+      - name: Difference list against GitHub's ubuntu-24.04
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          scripts/parity.sh --manifest manifest.json ci-ubuntu-24.04 > parity.md
+          head -n 20 parity.md
