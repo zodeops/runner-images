@@ -51,7 +51,7 @@ them after every release.
 <!-- software:start -->
 | Line | Use it with | Version | Published | Software |
 | --- | --- | --- | --- | --- |
-| `base` | `zode/base` | 20261111.2 | 2026-11-11 | [images/base](images/base/README.md) |
+| `base` | `zode/base` | 20261112.4 | 2026-11-12 | [images/base](images/base/README.md) |
 | `ci-ubuntu-24.04` | `zode/ci-ubuntu-24.04` | 20261111.2 | 2026-11-11 | [images/ci-ubuntu-24.04](images/ci-ubuntu-24.04/README.md) |
 <!-- software:end -->
 
