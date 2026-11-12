@@ -107,6 +107,7 @@ jobs:
       # line released just before this one never conflicts on README.md.
       - name: Write the software lists, commit and push
         env:
+          GH_TOKEN: ${{ github.token }}
           LINE: ${{ matrix.line }}
           VERSION: ${{ steps.version.outputs.version }}
         run: |
