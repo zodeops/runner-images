@@ -398,6 +398,20 @@ yamllint --version | grep "${YAMLLINT_VERSION}" >/dev/null
 ansible --version | grep "core ${ANSIBLE_CORE_VERSION}" >/dev/null
 ZODE_STEP
 
+# zode-ci, Zode's test wrapper (`zode-ci test -- <command>`, docs/zode-ci-interface.md
+# in zodeops/zoded): the static binary the control plane serves, checked
+# against the SHA256SUMS it serves beside it.
+RUN <<'ZODE_STEP'
+set -euxo pipefail
+base=https://api.zode.dev/dl
+curl -fsSL --retry 6 --retry-delay 5 --retry-all-errors --connect-timeout 20 -o /tmp/zode-ci "$base/zode-ci-linux-amd64"
+curl -fsSL --retry 6 --retry-delay 5 --retry-all-errors --connect-timeout 20 -o /tmp/zode-ci.sums "$base/SHA256SUMS"
+echo "$(grep ' zode-ci-linux-amd64$' /tmp/zode-ci.sums | cut -d' ' -f1)  /tmp/zode-ci" | sha256sum -c -
+install -m 0755 /tmp/zode-ci /usr/local/bin/zode-ci
+rm -f /tmp/zode-ci /tmp/zode-ci.sums
+zode-ci version
+ZODE_STEP
+
 # Rust through rustup lives in the runner user's home, as on GitHub. Root
 # (and a control plane that still starts the runner as root) uses it too.
 ENV CARGO_HOME=/home/runner/.cargo \

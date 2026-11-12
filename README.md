@@ -12,7 +12,7 @@ and in every size, and publishes all of them at once.
 
 | Line | Used by | What it adds to the Zode base image |
 | --- | --- | --- |
-| [`ci-ubuntu-24.04`](images/ci-ubuntu-24.04) | every CI job (`runs-on: zode-*`) | what GitHub's `ubuntu-24.04` carries that common actions and workflows use: the hosted tool cache (Node.js 22 and 24, Python 3.11 to 3.15, Go 1.24 to 1.26, Temurin 8 to 25), Maven, Gradle, PowerShell, Azure, Google Cloud and AWS CLIs, Kubernetes tools, Firefox and the browser drivers, rustup, a `runner` user with passwordless sudo, GitHub's apt package list and kernel settings; PostgreSQL, MySQL and Redis installed but stopped. What still differs is in [PARITY.md](images/ci-ubuntu-24.04/PARITY.md) |
+| [`ci-ubuntu-24.04`](images/ci-ubuntu-24.04) | every CI job (`runs-on: zode-*`) | what GitHub's `ubuntu-24.04` carries that common actions and workflows use: the hosted tool cache (Node.js 22 and 24, Python 3.11 to 3.15, Go 1.24 to 1.26, Temurin 8 to 25), Maven, Gradle, PowerShell, Azure, Google Cloud and AWS CLIs, Kubernetes tools, Firefox and the browser drivers, rustup, a `runner` user with passwordless sudo, Zode's `zode-ci` test wrapper, GitHub's apt package list and kernel settings; PostgreSQL, MySQL and Redis installed but stopped. What still differs is in [PARITY.md](images/ci-ubuntu-24.04/PARITY.md) |
 | [`base`](images/base) | sandboxes that ask for `zode/base` | zstd, Git LFS, yq; PostgreSQL and Redis keep running |
 
 The Zode base image itself is Ubuntu 24.04 with Docker (Buildx, Compose),
