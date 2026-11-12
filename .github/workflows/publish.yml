@@ -9,6 +9,7 @@ on:
     paths:
       - "images/**"
       - "!images/*/README.md"
+      - "!images/*/PARITY.md"
       - "scripts/**"
   workflow_dispatch:
     inputs:
@@ -106,6 +107,7 @@ jobs:
       # line released just before this one never conflicts on README.md.
       - name: Write the software lists, commit and push
         env:
+          GH_TOKEN: ${{ github.token }}
           LINE: ${{ matrix.line }}
           VERSION: ${{ steps.version.outputs.version }}
         run: |
@@ -116,6 +118,12 @@ jobs:
             git reset -q --hard origin/main
             scripts/update-docs.sh "$LINE" "$VERSION"
             git add README.md "images/$LINE/README.md"
+            # What still differs from GitHub's image, for lines that have a
+            # GitHub counterpart (images/<line>/parity.tsv).
+            if [ -f "images/$LINE/parity.tsv" ]; then
+              scripts/parity.sh "$LINE" >"images/$LINE/PARITY.md"
+              git add "images/$LINE/PARITY.md"
+            fi
             if git diff --cached --quiet; then
               echo "Software lists unchanged"
               exit 0
@@ -126,3 +134,21 @@ jobs:
           done
           echo "::error::could not push the software lists"
           exit 1
+
+      # A GitHub release per image release: the software list and, for lines
+      # with a GitHub counterpart, what still differs from it.
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LINE: ${{ matrix.line }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          git fetch -q origin main
+          git reset -q --hard origin/main
+          {
+            echo "\`zode/$LINE\` $VERSION, built from ${GITHUB_SHA:0:7}. Software list: [images/$LINE/README.md](https://github.com/$GITHUB_REPOSITORY/blob/$LINE/$VERSION/images/$LINE/README.md)."
+            echo
+            if [ -f "images/$LINE/PARITY.md" ]; then sed '1d' "images/$LINE/PARITY.md"; fi
+          } >notes.md
+          gh release create "$LINE/$VERSION" --target "$(git rev-parse HEAD)" \
+            --title "$LINE $VERSION" --notes-file notes.md --latest=false

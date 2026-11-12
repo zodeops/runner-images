@@ -12,7 +12,7 @@ and in every size, and publishes all of them at once.
 
 | Line | Used by | What it adds to the Zode base image |
 | --- | --- | --- |
-| [`ci-ubuntu-24.04`](images/ci-ubuntu-24.04) | every CI job (`runs-on: zode-*`) | AWS CLI, kubectl, Helm, Kustomize, yq, Temurin JDK 17 and 21, the hosted tool cache (Node.js 22 and 24, Python 3.12 and 3.13), `ImageOS`; PostgreSQL and Redis installed but stopped, as on GitHub's runners |
+| [`ci-ubuntu-24.04`](images/ci-ubuntu-24.04) | every CI job (`runs-on: zode-*`) | what GitHub's `ubuntu-24.04` carries that common actions and workflows use: the hosted tool cache (Node.js 22 and 24, Python 3.11 to 3.15, Go 1.24 to 1.26, Temurin 8 to 25), Maven, Gradle, PowerShell, Azure, Google Cloud and AWS CLIs, Kubernetes tools, Firefox and the browser drivers, rustup, a `runner` user with passwordless sudo, GitHub's apt package list and kernel settings; PostgreSQL, MySQL and Redis installed but stopped. What still differs is in [PARITY.md](images/ci-ubuntu-24.04/PARITY.md) |
 | [`base`](images/base) | sandboxes that ask for `zode/base` | zstd, Git LFS, yq; PostgreSQL and Redis keep running |
 
 The Zode base image itself is Ubuntu 24.04 with Docker (Buildx, Compose),
@@ -55,6 +55,33 @@ them after every release.
 | `ci-ubuntu-24.04` | `zode/ci-ubuntu-24.04` | 20261111.2 | 2026-11-11 | [images/ci-ubuntu-24.04](images/ci-ubuntu-24.04/README.md) |
 <!-- software:end -->
 
+## Parity with GitHub's image
+
+`ci-ubuntu-24.04` aims to run workflows written for GitHub's `ubuntu-24.04`
+with only `runs-on` changed. `scripts/parity.sh` compares the line's software
+report with the one GitHub attaches to every
+[actions/runner-images](https://github.com/actions/runner-images/releases)
+release (`internal.ubuntu24.json`). The publish workflow writes the result
+to [images/ci-ubuntu-24.04/PARITY.md](images/ci-ubuntu-24.04/PARITY.md) and
+into the GitHub release of every image version. Why something is left out
+is kept in `images/ci-ubuntu-24.04/parity.tsv`.
+
+```sh
+scripts/parity.sh ci-ubuntu-24.04            # published image vs GitHub's latest
+scripts/parity.sh --manifest m.json ci-ubuntu-24.04   # a local software report
+```
+
+## zode-ci in the image
+
+`ci-ubuntu-24.04` has an install hook for `zode-ci`, the test wrapper from
+zodeops/zoded (`cmd/zode-ci`). It is off while `ARG ZODE_CI_URL` is empty.
+To ship a release, set `ZODE_CI_URL` to
+`https://api.zode.dev/dl/zode-ci-linux-amd64` and `ZODE_CI_SHA256` to its line
+in `https://api.zode.dev/dl/SHA256SUMS` in `Dockerfile.in`, render and merge:
+the step installs it at `/usr/local/bin/zode-ci` and runs
+`zode-ci --version`. Until then the runner start script fetches it from
+`/dl` for every job.
+
 ## How a release works
 
 1. A push to `main` that changes `images/<line>/Dockerfile` starts the
@@ -74,7 +101,9 @@ them after every release.
    the published release stays as it was. The workflow prints each failed
    build's log.
 6. The workflow then writes `images/<line>/README.md` and the table above
-   from the public catalogue (`GET https://api.zode.dev/v1/official-images`).
+   from the public catalogue (`GET https://api.zode.dev/v1/official-images`),
+   `images/<line>/PARITY.md` for a line with a `parity.tsv`, and a GitHub
+   release `<line>/<version>` carrying the difference list.
 
 ## How a Dockerfile is read
 

@@ -35,7 +35,7 @@ sed -E "s/^ARG IMAGE_VERSION=.*/ARG IMAGE_VERSION=$VERSION/" "$DOCKERFILE" >"$wo
 : "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:?the job needs permissions: id-token: write}"
 token=$(curl -fsS --retry 3 -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
   "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=$(jq -rn --arg a "$AUDIENCE" '$a | @uri')" | jq -r .value)
-[ -n "$token" ] && [ "$token" != null ] || { echo "no OIDC token" >&2; exit 1; }
+if [ -z "$token" ] || [ "$token" = null ]; then echo "no OIDC token" >&2; exit 1; fi
 echo "::add-mask::$token"
 
 jq -n --arg line "$LINE" --arg version "$VERSION" --arg commit "${GITHUB_SHA:-$(git rev-parse HEAD)}" \

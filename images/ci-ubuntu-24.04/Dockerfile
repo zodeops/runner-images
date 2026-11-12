@@ -41,23 +41,112 @@ ARG PYTHON_312_RELEASE=3.12.16-40260402378
 ARG PYTHON_312_SHA256=dec61ed20cd3e71143f1642ef9966945dea8ae4f3e96b306205a710da4f2191a
 ARG PYTHON_313_RELEASE=3.13.18-40336726450
 ARG PYTHON_313_SHA256=683005a1465d94d40045f6a1a6eb316885b5f08d3360f7922b44ef58a14a9eed
+ARG PYTHON_311_RELEASE=3.11.18-40260280589
+ARG PYTHON_311_SHA256=099ef30fc27f0d7067a67be5a5fb7fd66154cfa1e4186c88f71c3a3070c81abc
+ARG PYTHON_314_RELEASE=3.14.10-40336797752
+ARG PYTHON_314_SHA256=d67d217db8480fd474bac19db80f6b956362432cca30ed6ac6fbe5a2bba6b4cd
+ARG PYTHON_315_RELEASE=3.15.2-40340363276
+ARG PYTHON_315_SHA256=a945ca657bf4efeac7483c0c82381448d3b651a8d0e49be421c71fd53085cd01
+# Go in the tool cache (actions/go-versions); 1.24 is GitHub's default `go`.
+ARG GO_124_VERSION=1.24.13
+ARG GO_124_BUILD=21696107652
+ARG GO_124_SHA256=01e37808a5c595e4102769772361bbd7656921d6c0039d60f39da82796cd7246
+ARG GO_125_VERSION=1.25.14
+ARG GO_125_BUILD=32325191436
+ARG GO_125_SHA256=29d783221624ee02465b6a5f63f4bffeaa1bc155f956030d7c3e64760ea1e0c8
+ARG GO_126_VERSION=1.26.11
+ARG GO_126_BUILD=42945178835
+ARG GO_126_SHA256=5e0d47b4ced8f967d6edcdca9d8a79292ddd3770c9895750f745cc0d187a8ebe
+# More Temurin JDKs, as GitHub carries 8, 11, 17, 21 and 25.
+ARG TEMURIN_8_VERSION=8u512-b09
+ARG TEMURIN_8_SHA256=fb3bfa869012419b562bb4235d0d83ec4f8c1dda62ae432ba20c6c3a7e43f7e4
+ARG TEMURIN_11_VERSION=11.0.33+10
+ARG TEMURIN_11_SHA256=c4b8eaf56c93b95b689ffc08d155df1bcdbbffb666f8f71d21d97aedaea6f0ec
+ARG TEMURIN_25_VERSION=25.0.5+8
+ARG TEMURIN_25_SHA256=68982529869257d0ee6b824ec5aa270ff8b118bb438670da0b97ebdab178d7fb
+# Java build tools (Apache publishes sha512, Gradle sha256).
+ARG MAVEN_VERSION=3.10.0
+ARG MAVEN_SHA512=908b1501bfb420bf7c8affb855534a9c407fd6099367bfb9f2f2dcb8e9799102bffb84518cde74c679bd76870247c6528683abdd620581bffa90f95d92d175aa
+ARG GRADLE_VERSION=9.9.1
+ARG GRADLE_SHA256=d8a18a7a841dd5df825d35a685fad6f2d7f12ac0c280e57b67c27b4a520ba228
+# PowerShell (`shell: pwsh`), from its GitHub release.
+ARG PWSH_VERSION=7.6.10
+ARG PWSH_SHA256=81a5a944702b116ea74c88b01ba5f1f46b1cd7c42c36d85e1bae90de1230b4d1
+# Vendor apt repositories: exact package versions; apt checks the signatures.
+ARG AZURE_CLI_VERSION=2.92.0-1~noble
+ARG GCLOUD_VERSION=593.0.0-0
+ARG FIREFOX_VERSION=160.0~build1
+# Browser drivers. ChromeDriver follows the base image's Chrome version.
+ARG GECKODRIVER_VERSION=0.37.1
+ARG GECKODRIVER_SHA256=e815130ea95983e162ae91843b48d3a3ce991735635fce83a647afde21e09f7e
+ARG SELENIUM_VERSION=4.52.0
+ARG SELENIUM_SHA256=cd167b9a5d405e8e59fa316f949f7af256834545d0631d72224500dafbc79d0f
+# Small tools.
+ARG KIND_VERSION=0.33.0
+ARG KIND_SHA256=aee6151561422756b764a4ae28e7f44cda5af5a9eead3cc9985112b1de8d8e0d
+ARG BAZELISK_VERSION=1.28.1
+ARG BAZELISK_SHA256=22e7d3a188699982f661cf4687137ee52d1f24fec1ec893d91a6c4d791a75de8
+ARG SSM_PLUGIN_VERSION=1.2.896.0
+ARG SSM_PLUGIN_SHA256=53f51fcc67314a4bf85888a38a3967cd41f8d0f28a60a9469a63acf935ba713e
+ARG YAMLLINT_VERSION=1.38.0
+ARG ANSIBLE_CORE_VERSION=2.21.6
+# Rust through rustup for the runner user, as on GitHub (stable, minimal
+# profile plus rustfmt and clippy).
+ARG RUSTUP_VERSION=1.29.3
+ARG RUSTUP_SHA256=b1c8cb14e30889e7e2999e6b69e62d9e9b9ffc0f4df8180564d306d9680e6c55
+ARG RUST_TOOLCHAIN=stable
+# Install hook for zode-ci, the test wrapper (zodeops/zoded cmd/zode-ci).
+# Empty: not installed. Set the URL of a release binary (api.zode.dev/dl)
+# and its sha256 to put it at /usr/local/bin/zode-ci.
+ARG ZODE_CI_URL=
+ARG ZODE_CI_SHA256=
 
 ENV ImageOS=ubuntu24 \
     ImageVersion=${IMAGE_VERSION} \
     RUNNER_TOOL_CACHE=/opt/hostedtoolcache \
     AGENT_TOOLSDIRECTORY=/opt/hostedtoolcache \
+    JAVA_HOME_8_X64=/usr/lib/jvm/temurin-8-jdk-amd64 \
+    JAVA_HOME_11_X64=/usr/lib/jvm/temurin-11-jdk-amd64 \
     JAVA_HOME_17_X64=/usr/lib/jvm/temurin-17-jdk-amd64 \
     JAVA_HOME_21_X64=/usr/lib/jvm/temurin-21-jdk-amd64 \
-    JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64
+    JAVA_HOME_25_X64=/usr/lib/jvm/temurin-25-jdk-amd64 \
+    JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64 \
+    GOROOT_1_24_X64=/opt/hostedtoolcache/go/${GO_124_VERSION}/x64 \
+    GOROOT_1_25_X64=/opt/hostedtoolcache/go/${GO_125_VERSION}/x64 \
+    GOROOT_1_26_X64=/opt/hostedtoolcache/go/${GO_126_VERSION}/x64 \
+    CHROMEWEBDRIVER=/usr/local/share/chromedriver-linux64 \
+    GECKOWEBDRIVER=/usr/local/share/gecko_driver \
+    SELENIUM_JAR_PATH=/usr/share/java/selenium-server.jar \
+    ACCEPT_EULA=Y
 
-# Ubuntu packages, from the mirror the base image points apt at. The package
-# lists are kept so `sudo apt-get install` works in a job, as on GitHub.
+# Ubuntu packages, from the mirror the base image points apt at: the apt
+# list of GitHub's ubuntu-24.04 toolset plus the compilers, build tools,
+# Ruby, container tools and MySQL it carries. The package lists are kept so
+# `sudo apt-get install` works in a job, as on GitHub.
 RUN <<'ZODE_STEP'
 set -euxo pipefail
+export DEBIAN_FRONTEND=noninteractive
+# command-not-found's apt hook can hang `apt-get update` (its helper blocks
+# on a full pipe); CI has no use for it.
+rm -f /etc/apt/apt.conf.d/50command-not-found
 for i in 1 2 3 4 5; do apt-get update && break; sleep $((i * 10)); done
+# MySQL: root's password is root, as on GitHub.
+echo "mysql-server mysql-server/root_password password root" | debconf-set-selections
+echo "mysql-server mysql-server/root_password_again password root" | debconf-set-selections
 apt-get install -y --no-install-recommends \
-  sudo zstd git-lfs unzip zip rsync openssh-client xz-utils ca-certificates curl jq
+  sudo zstd git-lfs unzip zip rsync openssh-client xz-utils ca-certificates curl jq \
+  acl aria2 autoconf automake binutils bison brotli bzip2 coreutils dbus dnsutils \
+  dpkg dpkg-dev fakeroot file findutils flex fonts-noto-color-emoji ftp g++ gcc \
+  gnupg2 haveged iproute2 iputils-ping libicu-dev libnss3-tools libsqlite3-dev \
+  libssl-dev libtool libyaml-dev locales lz4 m4 make mediainfo mercurial net-tools \
+  netcat-openbsd p7zip-full p7zip-rar parallel patchelf pigz pkg-config pollinate \
+  python-is-python3 rpm shellcheck sphinxsearch sqlite3 ssh sshpass swig \
+  systemd-coredump tar telnet texinfo time tk tree tzdata upx wget xvfb zsync \
+  build-essential gfortran clang clang-format clang-tidy ninja-build cmake \
+  ruby-full ant ant-optional podman buildah skopeo \
+  mysql-server mysql-client libmysqlclient-dev
 git lfs install --system
+mysql -uroot -proot -e 'SELECT 1' >/dev/null
 ZODE_STEP
 
 # AWS CLI v2 and the Kubernetes tools, each checked against its sha256.
@@ -100,35 +189,97 @@ cd /
 rm -rf "$work"
 ZODE_STEP
 
-# Temurin 17 and 21 in the tool cache (where actions/setup-java looks) and
-# under /usr/lib/jvm (GitHub's JAVA_HOME_*_X64 paths). 17 is the default.
+# Vendor apt repositories GitHub's image also installs from: Azure CLI
+# (Microsoft), Google Cloud CLI, Firefox (Mozilla), each signed-by its own
+# key, with exact versions. PowerShell from its release .deb.
+RUN <<'ZODE_STEP'
+set -euxo pipefail
+export DEBIAN_FRONTEND=noninteractive
+dl() { curl -fsSL --retry 6 --retry-delay 5 --retry-all-errors --connect-timeout 20 -o "$2" "$1"; }
+install -d -m 0755 /etc/apt/keyrings
+dl https://packages.microsoft.com/keys/microsoft.asc /tmp/microsoft.asc
+gpg --batch --yes --dearmor -o /etc/apt/keyrings/microsoft.gpg /tmp/microsoft.asc
+echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ noble main" \
+  >/etc/apt/sources.list.d/azure-cli.list
+dl https://packages.cloud.google.com/apt/doc/apt-key.gpg /tmp/google-cloud.gpg
+gpg --batch --yes --dearmor -o /etc/apt/keyrings/google-cloud.gpg /tmp/google-cloud.gpg
+echo "deb [signed-by=/etc/apt/keyrings/google-cloud.gpg] https://packages.cloud.google.com/apt cloud-sdk main" \
+  >/etc/apt/sources.list.d/google-cloud-sdk.list
+dl https://packages.mozilla.org/apt/repo-signing-key.gpg /tmp/mozilla.asc
+gpg --batch --yes --dearmor -o /etc/apt/keyrings/mozilla.gpg /tmp/mozilla.asc
+echo "deb [signed-by=/etc/apt/keyrings/mozilla.gpg] https://packages.mozilla.org/apt mozilla main" \
+  >/etc/apt/sources.list.d/mozilla.list
+# Firefox from Mozilla, never Ubuntu's snap transitional package.
+printf 'Package: firefox*\nPin: origin packages.mozilla.org\nPin-Priority: 1000\n' >/etc/apt/preferences.d/mozilla
+for i in 1 2 3 4 5; do apt-get update && break; sleep $((i * 10)); done
+apt-get install -y --no-install-recommends \
+  "azure-cli=${AZURE_CLI_VERSION}" "google-cloud-cli=${GCLOUD_VERSION}" "firefox=${FIREFOX_VERSION}"
+az version --output tsv --query '"azure-cli"' | grep -x "${AZURE_CLI_VERSION%%-*}" >/dev/null
+gcloud --version | grep -x "Google Cloud SDK ${GCLOUD_VERSION%%-*}" >/dev/null
+firefox --version | grep " ${FIREFOX_VERSION%%~*}" >/dev/null
+
+dl "https://github.com/PowerShell/PowerShell/releases/download/v${PWSH_VERSION}/powershell_${PWSH_VERSION}-1.deb_amd64.deb" /tmp/pwsh.deb
+echo "$PWSH_SHA256  /tmp/pwsh.deb" | sha256sum -c -
+apt-get install -y --no-install-recommends /tmp/pwsh.deb
+pwsh --version | grep "PowerShell ${PWSH_VERSION}" >/dev/null
+rm -f /tmp/pwsh.deb /tmp/microsoft.asc /tmp/mozilla.asc /tmp/google-cloud.gpg
+rm -rf /root/.azure /root/.config/gcloud
+ZODE_STEP
+
+# Temurin 8, 11, 17, 21 and 25 in the tool cache (where actions/setup-java
+# looks) and under /usr/lib/jvm (GitHub's JAVA_HOME_*_X64 paths). 17 is the
+# default. Maven and Gradle on PATH, as on GitHub.
 RUN <<'ZODE_STEP'
 set -euxo pipefail
 dl() { curl -fsSL --retry 6 --retry-delay 5 --retry-all-errors --connect-timeout 20 -o "$2" "$1"; }
 mkdir -p "$RUNNER_TOOL_CACHE/Java_Temurin-Hotspot_jdk" /usr/lib/jvm
-jdk() { # MAJOR VERSION SHA256
-  local major=$1 v=$2 sum=$3
-  local file="OpenJDK${major}U-jdk_x64_linux_hotspot_${v/+/_}.tar.gz"
-  local dest="$RUNNER_TOOL_CACHE/Java_Temurin-Hotspot_jdk/${v/+/-}/x64"
-  dl "https://github.com/adoptium/temurin${major}-binaries/releases/download/jdk-${v/+/%2B}/$file" "/tmp/$file"
+jdk() { # MAJOR RELEASE-TAG FILE-VERSION CACHE-VERSION JAVA-VERSION SHA256
+  local major=$1 tag=$2 filev=$3 cachev=$4 javav=$5 sum=$6
+  local file="OpenJDK${major}U-jdk_x64_linux_hotspot_${filev}.tar.gz"
+  local dest="$RUNNER_TOOL_CACHE/Java_Temurin-Hotspot_jdk/$cachev/x64"
+  dl "https://github.com/adoptium/temurin${major}-binaries/releases/download/${tag//+/%2B}/$file" "/tmp/$file"
   echo "$sum  /tmp/$file" | sha256sum -c -
+  rm -rf "$dest"
   mkdir -p "$dest"
   tar -xzf "/tmp/$file" -C "$dest" --strip-components=1
   rm -f "/tmp/$file"
   touch "$(dirname "$dest")/x64.complete"
   ln -sfn "$dest" "/usr/lib/jvm/temurin-${major}-jdk-amd64"
-  "/usr/lib/jvm/temurin-${major}-jdk-amd64/bin/java" -version 2>&1 | grep "\"${v%+*}\"" >/dev/null
+  "/usr/lib/jvm/temurin-${major}-jdk-amd64/bin/java" -version 2>&1 | grep "\"${javav}" >/dev/null
 }
-jdk 17 "$TEMURIN_17_VERSION" "$TEMURIN_17_SHA256"
-jdk 21 "$TEMURIN_21_VERSION" "$TEMURIN_21_SHA256"
+# Java 8 tags and files say 8u512-b09; the tool cache says 8.0.512-9 and
+# `java -version` 1.8.0_512.
+u=${TEMURIN_8_VERSION#8u}
+jdk 8 "jdk${TEMURIN_8_VERSION}" "${TEMURIN_8_VERSION//-/}" "8.0.${u%-b*}-$((10#${u#*-b}))" "1.8.0_${u%-b*}" "$TEMURIN_8_SHA256"
+for major in 11 17 21 25; do
+  vv=TEMURIN_${major}_VERSION
+  sv=TEMURIN_${major}_SHA256
+  v=${!vv}
+  jdk "$major" "jdk-$v" "${v/+/_}" "${v/+/-}" "${v%+*}\"" "${!sv}"
+done
 # java, javac, jar, ... on PATH from the default JDK.
 for b in "$JAVA_HOME"/bin/*; do ln -sf "$b" "/usr/local/bin/$(basename "$b")"; done
 java -version 2>&1 | grep "\"${TEMURIN_17_VERSION%+*}\"" >/dev/null
+
+dl "https://archive.apache.org/dist/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz" /tmp/maven.tar.gz
+echo "$MAVEN_SHA512  /tmp/maven.tar.gz" | sha512sum -c -
+mkdir -p /usr/share/apache-maven
+tar -xzf /tmp/maven.tar.gz -C /usr/share/apache-maven --strip-components=1
+ln -sf /usr/share/apache-maven/bin/mvn /usr/local/bin/mvn
+mvn -v | grep "Apache Maven ${MAVEN_VERSION} " >/dev/null
+
+dl "https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip" /tmp/gradle.zip
+echo "$GRADLE_SHA256  /tmp/gradle.zip" | sha256sum -c -
+unzip -q -o -d /usr/share /tmp/gradle.zip
+ln -sfn "/usr/share/gradle-${GRADLE_VERSION}" /usr/share/gradle
+ln -sf /usr/share/gradle/bin/gradle /usr/local/bin/gradle
+rm -f /tmp/maven.tar.gz /tmp/gradle.zip
 ZODE_STEP
 
-# Node.js and Python in the hosted tool cache, laid out the way
-# actions/setup-node and actions/setup-python expect, so they find them
-# without a download.
+# Node.js, Python and Go in the hosted tool cache, laid out the way
+# actions/setup-node, setup-python and setup-go expect, so they find them
+# without a download. Go 1.24 is the `go` on PATH, as on GitHub; the base
+# image's newer Go stays at /usr/local/go.
 RUN <<'ZODE_STEP'
 set -euxo pipefail
 dl() { curl -fsSL --retry 6 --retry-delay 5 --retry-all-errors --connect-timeout 20 -o "$2" "$1"; }
@@ -165,41 +316,179 @@ cache_python() { # RELEASE SHA256
   [ -e "$RUNNER_TOOL_CACHE/Python/$v/x64.complete" ]
   "$RUNNER_TOOL_CACHE/Python/$v/x64/bin/python3" --version | grep "Python $v" >/dev/null
 }
+cache_python "$PYTHON_311_RELEASE" "$PYTHON_311_SHA256"
 cache_python "$PYTHON_312_RELEASE" "$PYTHON_312_SHA256"
 cache_python "$PYTHON_313_RELEASE" "$PYTHON_313_SHA256"
+cache_python "$PYTHON_314_RELEASE" "$PYTHON_314_SHA256"
+cache_python "$PYTHON_315_RELEASE" "$PYTHON_315_SHA256"
+
+cache_go() { # VERSION BUILD SHA256
+  local dest="$RUNNER_TOOL_CACHE/go/$1/x64"
+  dl "https://github.com/actions/go-versions/releases/download/$1-$2/go-$1-linux-x64.tar.gz" /tmp/go.tar.gz
+  echo "$3  /tmp/go.tar.gz" | sha256sum -c -
+  rm -rf "$dest"
+  mkdir -p "$dest"
+  tar -xzf /tmp/go.tar.gz -C "$dest"
+  rm -f /tmp/go.tar.gz
+  touch "$RUNNER_TOOL_CACHE/go/$1/x64.complete"
+  "$dest/bin/go" version | grep "go$1 " >/dev/null
+}
+cache_go "$GO_124_VERSION" "$GO_124_BUILD" "$GO_124_SHA256"
+cache_go "$GO_125_VERSION" "$GO_125_BUILD" "$GO_125_SHA256"
+cache_go "$GO_126_VERSION" "$GO_126_BUILD" "$GO_126_SHA256"
+ln -sf "$GOROOT_1_24_X64/bin/go" /usr/local/bin/go
+ln -sf "$GOROOT_1_24_X64/bin/gofmt" /usr/local/bin/gofmt
+# The base image puts /usr/local/go/bin first in login shells; here the
+# default Go is the tool cache's, as on GitHub.
+sed -i '\#/usr/local/go/bin#d' /etc/profile.d/zode.sh
+env -i PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HOME=/root bash -lc 'go version' |
+  grep "go${GO_124_VERSION} " >/dev/null
+ZODE_STEP
+
+# Browser drivers at GitHub's paths (CHROMEWEBDRIVER, GECKOWEBDRIVER,
+# SELENIUM_JAR_PATH) and on PATH. ChromeDriver matches the installed Chrome
+# exactly (Chrome for Testing publishes no checksum).
+RUN <<'ZODE_STEP'
+set -euxo pipefail
+dl() { curl -fsSL --retry 6 --retry-delay 5 --retry-all-errors --connect-timeout 20 -o "$2" "$1"; }
+chrome=$(google-chrome --version | grep -oE '[0-9]+(\.[0-9]+){3}')
+dl "https://storage.googleapis.com/chrome-for-testing-public/$chrome/linux64/chromedriver-linux64.zip" /tmp/chromedriver.zip
+rm -rf "$CHROMEWEBDRIVER"
+unzip -q -d "$(dirname "$CHROMEWEBDRIVER")" /tmp/chromedriver.zip
+chmod 0755 "$CHROMEWEBDRIVER/chromedriver"
+ln -sf "$CHROMEWEBDRIVER/chromedriver" /usr/local/bin/chromedriver
+chromedriver --version | grep " $chrome " >/dev/null
+
+dl "https://github.com/mozilla/geckodriver/releases/download/v${GECKODRIVER_VERSION}/geckodriver-v${GECKODRIVER_VERSION}-linux64.tar.gz" /tmp/geckodriver.tar.gz
+echo "$GECKODRIVER_SHA256  /tmp/geckodriver.tar.gz" | sha256sum -c -
+mkdir -p "$GECKOWEBDRIVER"
+tar -xzf /tmp/geckodriver.tar.gz -C "$GECKOWEBDRIVER"
+ln -sf "$GECKOWEBDRIVER/geckodriver" /usr/local/bin/geckodriver
+geckodriver --version | grep "geckodriver ${GECKODRIVER_VERSION}" >/dev/null
+
+jar=/usr/share/java/selenium-server-${SELENIUM_VERSION}.jar
+mkdir -p /usr/share/java
+dl "https://github.com/SeleniumHQ/selenium/releases/download/selenium-${SELENIUM_VERSION}/selenium-server-${SELENIUM_VERSION}.jar" "$jar"
+echo "$SELENIUM_SHA256  $jar" | sha256sum -c -
+ln -sf "$jar" "$SELENIUM_JAR_PATH"
+rm -f /tmp/chromedriver.zip /tmp/geckodriver.tar.gz
+ZODE_STEP
+
+# Small tools from GitHub's list: kind, Bazelisk (also as `bazel`), the AWS
+# Session Manager plugin, yamllint and Ansible (pipx, through the mirror).
+RUN <<'ZODE_STEP'
+set -euxo pipefail
+dl() { curl -fsSL --retry 6 --retry-delay 5 --retry-all-errors --connect-timeout 20 -o "$2" "$1"; }
+dl "https://github.com/kubernetes-sigs/kind/releases/download/v${KIND_VERSION}/kind-linux-amd64" /tmp/kind
+echo "$KIND_SHA256  /tmp/kind" | sha256sum -c -
+install -m 0755 /tmp/kind /usr/local/bin/kind
+dl "https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELISK_VERSION}/bazelisk-linux-amd64" /tmp/bazelisk
+echo "$BAZELISK_SHA256  /tmp/bazelisk" | sha256sum -c -
+install -m 0755 /tmp/bazelisk /usr/local/bin/bazelisk
+ln -sf bazelisk /usr/local/bin/bazel
+dl "https://s3.amazonaws.com/session-manager-downloads/plugin/${SSM_PLUGIN_VERSION}/ubuntu_64bit/session-manager-plugin.deb" /tmp/ssm.deb
+echo "$SSM_PLUGIN_SHA256  /tmp/ssm.deb" | sha256sum -c -
+DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends /tmp/ssm.deb
+rm -f /tmp/kind /tmp/bazelisk /tmp/ssm.deb
+export PIP_INDEX_URL="$ZODE_MIRROR/pypi/simple/" PIP_TRUSTED_HOST="${ZODE_MIRROR#http://}"
+PIP_TRUSTED_HOST=${PIP_TRUSTED_HOST%%:*}
+export PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin
+pipx install "yamllint==${YAMLLINT_VERSION}"
+pipx install --include-deps "ansible-core==${ANSIBLE_CORE_VERSION}"
+yamllint --version | grep "${YAMLLINT_VERSION}" >/dev/null
+ansible --version | grep "core ${ANSIBLE_CORE_VERSION}" >/dev/null
+ZODE_STEP
+
+# Rust through rustup lives in the runner user's home, as on GitHub. Root
+# (and a control plane that still starts the runner as root) uses it too.
+ENV CARGO_HOME=/home/runner/.cargo \
+    RUSTUP_HOME=/home/runner/.rustup
+
+# The `runner` user: uid 1001, primary group docker, passwordless sudo,
+# HOME /home/runner, work folder /home/runner/work, like GitHub's hosted
+# runners. Zode starts the job as this user when the image has it
+# (docs/ci-contract.md in zodeops/zoded). Then rustup, GitHub's PATH order
+# and kernel settings, and a tool cache and npm globals the user can write.
+RUN <<'ZODE_STEP'
+set -euxo pipefail
+dl() { curl -fsSL --retry 6 --retry-delay 5 --retry-all-errors --connect-timeout 20 -o "$2" "$1"; }
+getent group docker >/dev/null || groupadd -r docker
+id runner >/dev/null 2>&1 || useradd -m -u 1001 -g docker -G adm,users,systemd-journal -s /bin/bash runner
+printf '%s\n' 'runner ALL=(ALL) NOPASSWD:ALL' 'Defaults:runner !requiretty' >/etc/sudoers.d/runner
+chmod 0440 /etc/sudoers.d/runner
+visudo -cf /etc/sudoers.d/runner
+install -d -o runner -g docker /home/runner/work /home/runner/.config "$CARGO_HOME" "$RUSTUP_HOME"
+
+dl "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init" /tmp/rustup-init
+echo "$RUSTUP_SHA256  /tmp/rustup-init" | sha256sum -c -
+chmod 0755 /tmp/rustup-init
+runuser -u runner -- env HOME=/home/runner CARGO_HOME="$CARGO_HOME" RUSTUP_HOME="$RUSTUP_HOME" \
+  /tmp/rustup-init -y --no-modify-path --profile minimal --default-toolchain "$RUST_TOOLCHAIN" -c rustfmt -c clippy
+rm -f /tmp/rustup-init
+rm -rf "$CARGO_HOME/registry"
+"$CARGO_HOME/bin/rustup" --version
+"$CARGO_HOME/bin/cargo" --version
+
+# GitHub's PATH order: the user's own bin directories and cargo first.
+path=/home/runner/.local/bin:$CARGO_HOME/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+sed -i '/^PATH=/d' /etc/environment
+echo "PATH=\"$path\"" >>/etc/environment
+
+# setup-* actions add versions to the tool cache, and `npm install -g`
+# works without sudo (GitHub opens these up the same way).
+chown -R runner:docker "$RUNNER_TOOL_CACHE" /home/runner
+chmod -R a+rwX /usr/local/lib/node_modules /usr/local/bin
+
+# Kernel settings from GitHub's image: Elasticsearch service containers
+# need max_map_count; kind and file watchers need inotify room.
+printf '%s\n' vm.max_map_count=262144 fs.inotify.max_user_watches=655360 \
+  fs.inotify.max_user_instances=1280 >/etc/sysctl.d/60-github-runner.conf
+sysctl -p /etc/sysctl.d/60-github-runner.conf
+[ "$(sysctl -n vm.max_map_count)" = 262144 ]
+
+if [ -n "${ZODE_CI_URL}" ]; then
+  dl "$ZODE_CI_URL" /tmp/zode-ci
+  echo "$ZODE_CI_SHA256  /tmp/zode-ci" | sha256sum -c -
+  install -m 0755 /tmp/zode-ci /usr/local/bin/zode-ci
+  rm -f /tmp/zode-ci
+  zode-ci --version
+fi
 ZODE_STEP
 
 # Behave like a GitHub runner:
-# - PostgreSQL and Redis installed but stopped and disabled, so service
-#   containers can bind 5432 and 6379;
+# - no background apt runs: a restored VM fires the daily apt timers and
+#   holds the apt lock while a job runs `sudo apt-get install`;
+# - PostgreSQL, MySQL and Redis installed but stopped and disabled, so
+#   service containers can bind 5432, 3306 and 6379;
 # - no DATABASE_URL / REDIS_URL pointing at those stopped servers;
-# - the runner reads ImageOS, the tool cache and JAVA_HOME from its .env,
-#   because Zode starts it with a bare environment.
+# - the runner reads the image's environment and PATH from its .env and
+#   .path, because Zode starts it with a bare environment.
 RUN <<'ZODE_STEP'
 set -euxo pipefail
-systemctl disable --now postgresql redis-server
+systemctl disable --now postgresql redis-server mysql
+systemctl disable --now apt-daily.timer apt-daily-upgrade.timer unattended-upgrades.service || true
+systemctl mask apt-daily.service apt-daily-upgrade.service unattended-upgrades.service
 systemctl stop 'postgresql@*' || true
 sed -i '/^DATABASE_URL=/d; /^REDIS_URL=/d' /etc/environment
 sed -i '/DATABASE_URL=/d; /REDIS_URL=/d' /etc/profile.d/zode.sh
-if ss -ltnH | grep -E ':(5432|6379)[[:space:]]'; then
-  echo "5432 or 6379 is still in use" >&2
+if ss -ltnH | grep -E ':(3306|5432|6379)[[:space:]]'; then
+  echo "3306, 5432 or 6379 is still in use" >&2
   exit 1
 fi
 if [ -d /opt/zode-runner ]; then
   touch /opt/zode-runner/.env
-  sed -i -E "/^(ImageOS|ImageVersion|RUNNER_TOOL_CACHE|AGENT_TOOLSDIRECTORY|JAVA_HOME|JAVA_HOME_17_X64|JAVA_HOME_21_X64)=/d" /opt/zode-runner/.env
-  {
-    echo "ImageOS=$ImageOS"
-    echo "ImageVersion=$ImageVersion"
-    echo "RUNNER_TOOL_CACHE=$RUNNER_TOOL_CACHE"
-    echo "AGENT_TOOLSDIRECTORY=$AGENT_TOOLSDIRECTORY"
-    echo "JAVA_HOME=$JAVA_HOME"
-    echo "JAVA_HOME_17_X64=$JAVA_HOME_17_X64"
-    echo "JAVA_HOME_21_X64=$JAVA_HOME_21_X64"
-  } >> /opt/zode-runner/.env
+  for n in ImageOS ImageVersion RUNNER_TOOL_CACHE AGENT_TOOLSDIRECTORY JAVA_HOME \
+    JAVA_HOME_8_X64 JAVA_HOME_11_X64 JAVA_HOME_17_X64 JAVA_HOME_21_X64 JAVA_HOME_25_X64 \
+    GOROOT_1_24_X64 GOROOT_1_25_X64 GOROOT_1_26_X64 CHROMEWEBDRIVER GECKOWEBDRIVER \
+    SELENIUM_JAR_PATH ACCEPT_EULA CARGO_HOME RUSTUP_HOME; do
+    sed -i "/^$n=/d" /opt/zode-runner/.env
+    echo "$n=${!n}" >>/opt/zode-runner/.env
+  done
+  sed -n 's/^PATH="\(.*\)"$/\1/p' /etc/environment >/opt/zode-runner/.path
+  chown -R runner:docker /opt/zode-runner
 fi
 apt-get clean
-rm -rf /tmp/* /root/.cache/pip
+rm -rf /tmp/* /root/.cache/pip /root/.cache/pipx
 ZODE_STEP
 
 # The software report (scripts/software-report.sh), installed as
@@ -218,6 +507,8 @@ cat > /usr/local/bin/zode-software-report <<'ZODE_SOFTWARE_REPORT'
 set -uo pipefail
 
 TOOL_CACHE=${RUNNER_TOOL_CACHE:-${AGENT_TOOLSDIRECTORY:-/opt/hostedtoolcache}}
+# rustup lives in CARGO_HOME (GitHub's layout); report the toolchain it runs.
+if [ -n "${CARGO_HOME:-}" ] && [ -d "$CARGO_HOME/bin" ]; then PATH="$CARGO_HOME/bin:$PATH"; fi
 ROWS=$(mktemp)
 trap 'rm -f "$ROWS"' EXIT
 
@@ -266,18 +557,29 @@ fi
 G="Operating system"
 add "$G" "OS" "$OS"
 add "$G" "Kernel" "$(uname -r)"
-have systemctl && add "$G" "systemd" "$(run systemctl --version | head -n1 | grep -oE '[0-9]+(\.[0-9]+)*' | head -n1)"
+if have dpkg-query && dpkg-query -W systemd >/dev/null 2>&1; then
+  add "$G" "systemd" "$(dpkg-query -W -f='${Version}' systemd)"
+else
+  have systemctl && add "$G" "systemd" "$(run systemctl --version | head -n1 | grep -oE '[0-9]+(\.[0-9]+)*' | head -n1)"
+fi
 
 # Languages and runtimes.
 G="Languages and runtimes"
 tool "$G" "Bash" bash --version
+have dpkg-query && add "$G" "Dash" "$(dpkg-query -W -f='${Version}' dash 2>/dev/null)"
 have gcc && add "$G" "GCC" "$(run gcc -dumpfullversion | num)"
+have gfortran && add "$G" "GNU Fortran" "$(run gfortran -dumpfullversion | num)"
+tool "$G" "Clang" clang --version
+tool "$G" "Clang-format" clang-format --version
+tool "$G" "Clang-tidy" clang-tidy --version
 tool "$G" "Go" go version
 java_list=""
 for var in $(env | grep -oE '^JAVA_HOME_[0-9]+_X64' | sort -t_ -k3 -n); do
   dir=${!var}
   [ -x "$dir/bin/java" ] || continue
-  v=$(grep -E '^JAVA_RUNTIME_VERSION=' "$dir/release" 2>/dev/null | cut -d'"' -f2)
+  # SEMANTIC_VERSION says 8.0.512+9 where Java 8 itself says 1.8.0_512.
+  v=$(grep -E '^SEMANTIC_VERSION=' "$dir/release" 2>/dev/null | cut -d'"' -f2)
+  [ -n "$v" ] || v=$(grep -E '^JAVA_RUNTIME_VERSION=' "$dir/release" 2>/dev/null | cut -d'"' -f2)
   [ -n "$v" ] || v=$(run "$dir/bin/java" -version | num)
   v=${v%-LTS}
   [ "$(readlink -f "$dir")" = "$(readlink -f "${JAVA_HOME:-/nonexistent}")" ] && v="$v (default)"
@@ -290,8 +592,12 @@ else
 fi
 tool "$G" "Node.js" node --version
 tool "$G" "Perl" perl -e 'print $^V'
+tool "$G" "PowerShell" pwsh --version
 tool "$G" "Python" python3 --version
+tool "$G" "Ruby" ruby --version
 tool "$G" "Rust" rustc --version
+tool "$G" "Rustdoc" rustdoc --version
+tool "$G" "Rustfmt" rustfmt --version
 
 # Package managers.
 G="Package managers"
@@ -301,7 +607,21 @@ tool "$G" "Yarn" yarn --version
 tool "$G" "Bun" bun --version
 tool "$G" "pip" pip3 --version
 tool "$G" "pipx" pipx --version
+tool "$G" "RubyGems" gem --version
 tool "$G" "Cargo" cargo --version
+tool "$G" "Rustup" rustup --version
+
+# Build tools.
+G="Build tools"
+tool "$G" "CMake" cmake --version
+tool "$G" "Ninja" ninja --version
+tool "$G" "Maven" mvn -v
+tool "$G" "Gradle" gradle --version
+tool "$G" "Ant" ant -version
+# Bazelisk prints its own version, then runs Bazel: hand it /bin/true as
+# Bazel so it downloads nothing.
+have bazelisk && add "$G" "Bazelisk" "$(HOME=${HOME:-/tmp} USE_BAZEL_VERSION=/bin/true run bazelisk version |
+  grep -i '^bazelisk' | num)"
 
 # Containers.
 G="Containers"
@@ -311,12 +631,17 @@ if have docker; then
   add "$G" "Docker Buildx" "$(run docker buildx version | num)"
   add "$G" "Docker Compose" "$(run docker compose version --short | num)"
 fi
+tool "$G" "Podman" podman --version
+tool "$G" "Buildah" buildah --version
+tool "$G" "Skopeo" skopeo --version
+tool "$G" "Kind" kind version
 
 # Cloud and deploy CLIs.
 G="Cloud and deploy CLIs"
 tool "$G" "AWS CLI" aws --version
-tool "$G" "AWS Session Manager plugin" session-manager-plugin --version
-tool "$G" "Google Cloud CLI" gcloud version --format='value(Google Cloud SDK)'
+tool "$G" "AWS CLI Session Manager Plugin" session-manager-plugin --version
+have az && add "$G" "Azure CLI" "$(run az version --query '"azure-cli"' --output tsv | num)"
+tool "$G" "Google Cloud CLI" gcloud --version
 tool "$G" "kubectl" kubectl version --client
 tool "$G" "Helm" helm version --short
 tool "$G" "Kustomize" kustomize version
@@ -332,20 +657,34 @@ fi
 tool "$G" "jq" jq --version
 tool "$G" "yq" yq --version
 tool "$G" "zstd" zstd --version
-tool "$G" "CMake" cmake --version
 tool "$G" "rsync" rsync --version
 tool "$G" "OpenSSH" ssh -V
+tool "$G" "OpenSSL" openssl version
 tool "$G" "curl" curl --version
+tool "$G" "Mercurial" hg --version
+tool "$G" "MediaInfo" mediainfo --version
+tool "$G" "ShellCheck" shellcheck --version
+tool "$G" "yamllint" yamllint --version
+tool "$G" "Ansible" ansible --version
+have searchd && add "$G" "Sphinx Open Source Search Server" "$(dpkg-query -W -f='${Version}' sphinxsearch 2>/dev/null | num)"
+have haveged && add "$G" "Haveged" "$(dpkg-query -W -f='${Version}' haveged 2>/dev/null | num)"
 
 # Databases. The version says whether the service runs in the image.
 G="Databases"
 have psql && add "$G" "PostgreSQL" "$(run psql --version | num)$(service postgresql)"
+have mysqld && add "$G" "MySQL" "$(run mysqld --version | num)$(service mysql)"
 have redis-server && add "$G" "Redis" "$(run redis-server --version | num)$(service redis-server)"
 tool "$G" "SQLite" sqlite3 --version
 
-# Browsers.
+# Browsers and drivers.
 G="Browsers"
 tool "$G" "Google Chrome" google-chrome --version
+tool "$G" "ChromeDriver" chromedriver --version
+tool "$G" "Mozilla Firefox" firefox --version
+tool "$G" "Geckodriver" geckodriver --version
+if [ -n "${SELENIUM_JAR_PATH:-}" ] && [ -r "$SELENIUM_JAR_PATH" ]; then
+  add "$G" "Selenium server" "$(basename "$(readlink -f "$SELENIUM_JAR_PATH")" | num)"
+fi
 for pkg in /usr/local/lib/node_modules/playwright/package.json /usr/lib/node_modules/playwright/package.json; do
   if [ -r "$pkg" ]; then
     add "$G" "Playwright" "$(jq -r .version "$pkg")"
@@ -355,7 +694,7 @@ done
 
 # Cached tools: what actions/setup-* find without a download.
 G="Cached tools"
-for entry in "node:Node.js" "Python:Python" "go:Go" "Java_Temurin-Hotspot_jdk:Java (Temurin)"; do
+for entry in "node:Node.js" "Python:Python" "PyPy:PyPy" "go:Go" "Ruby:Ruby" "Java_Temurin-Hotspot_jdk:Java (Temurin)" "CodeQL:CodeQL"; do
   dir="$TOOL_CACHE/${entry%%:*}"
   [ -d "$dir" ] || continue
   vs=$(for d in "$dir"/*/; do
@@ -364,9 +703,33 @@ for entry in "node:Node.js" "Python:Python" "go:Go" "Java_Temurin-Hotspot_jdk:Ja
   add "$G" "${entry#*:}" "$vs"
 done
 
+# apt packages GitHub's ubuntu-24.04 lists (its toolset's apt section), when
+# installed here.
+G="Installed apt packages"
+if have dpkg-query; then
+  for p in acl aria2 autoconf automake binutils bison brotli bzip2 coreutils curl \
+    dbus dnsutils dpkg dpkg-dev fakeroot file findutils flex fonts-noto-color-emoji \
+    ftp g++ gcc gnupg2 haveged iproute2 iputils-ping jq libicu-dev libnss3-tools \
+    libsqlite3-dev libssl-dev libtool libyaml-dev locales lz4 m4 make mediainfo \
+    mercurial net-tools netcat openssh-client p7zip-full p7zip-rar parallel patchelf \
+    pigz pkg-config pollinate python-is-python3 rpm rsync shellcheck sphinxsearch \
+    sqlite3 ssh sshpass sudo swig systemd-coredump tar telnet texinfo time tk tree \
+    tzdata unzip upx wget xvfb xz-utils zip zsync; do
+    # Virtual packages (netcat) resolve to the package that provides them.
+    v=$(dpkg-query -W -f='${db:Status-Abbrev}${Version}' "$p" 2>/dev/null | sed -n 's/^ii *//p')
+    if [ -z "$v" ] && have apt-cache; then
+      for q in $(apt-cache showpkg "$p" 2>/dev/null | awk '/^Reverse Provides:/{f=1; next} f && NF {print $1}'); do
+        v=$(dpkg-query -W -f='${db:Status-Abbrev}${Version}' "$q" 2>/dev/null | sed -n 's/^ii *//p')
+        [ -n "$v" ] && break
+      done
+    fi
+    add "$G" "$p" "$v"
+  done
+fi
+
 # Environment worth knowing, when set.
 ENV_JSON=$(jq -n '$ENV | with_entries(select(.key | test(
-  "^(ImageOS|ImageVersion|ZODE_IMAGE_VERSION|RUNNER_TOOL_CACHE|AGENT_TOOLSDIRECTORY|JAVA_HOME|JAVA_HOME_[0-9]+_X64|PLAYWRIGHT_BROWSERS_PATH|CHROME_PATH)$")))')
+  "^(ImageOS|ImageVersion|ZODE_IMAGE_VERSION|RUNNER_TOOL_CACHE|AGENT_TOOLSDIRECTORY|JAVA_HOME|JAVA_HOME_[0-9]+_X64|GOROOT_[0-9_]+_X64|PLAYWRIGHT_BROWSERS_PATH|CHROME_PATH|CHROMEWEBDRIVER|GECKOWEBDRIVER|EDGEWEBDRIVER|SELENIUM_JAR_PATH|CONDA|VCPKG_INSTALLATION_ROOT|ANDROID_[A-Z_]+|ACCEPT_EULA|XDG_CONFIG_HOME|CARGO_HOME|RUSTUP_HOME|PIPX_HOME|PIPX_BIN_DIR|ANT_HOME|GRADLE_HOME|M2_HOME|POWERSHELL_DISTRIBUTION_CHANNEL)$")))')
 
 MANIFEST=$(jq -Rnc --arg os "$OS" --argjson env "$ENV_JSON" '
   [inputs | split("\t") | select(length == 3) | {g: .[0], n: .[1], v: .[2]}] as $rows

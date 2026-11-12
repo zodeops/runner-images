@@ -1,0 +1,84 @@
+# What scripts/parity.sh needs to compare this line with GitHub's ubuntu-24.04.
+# Tab-separated. Lines starting with # are comments.
+#
+#   alias  <name in GitHub's report>  <name in zode-software-report>
+#   note   <area>  <name in GitHub's report>  <why Zode leaves it out>
+#
+# Areas: tool, cached, env, apt, or * for any. A missing item with no note
+# shows as "not added yet".
+
+alias	OS Version	OS
+alias	Kernel Version	Kernel
+alias	Systemd version	systemd
+alias	GNU C++	GCC
+alias	Pip3	pip
+alias	sqlite3	SQLite
+
+note	tool	Image Version	in the ImageVersion variable
+note	tool	Kernel Version	Zode runs its own VM kernel
+
+# Large toolchains belong in a workspace's own image (README, Contributing).
+note	*	.NET Core SDK	large toolchain: actions/setup-dotnet installs it, or use a workspace image
+note	*	nbgv	.NET tool: dotnet tool install
+note	*	Android Command Line Tools	large toolchain: use a workspace image
+note	*	Android SDK Build-tools	large toolchain: use a workspace image
+note	*	Android SDK Platform-Tools	large toolchain: use a workspace image
+note	*	Android SDK Platforms	large toolchain: use a workspace image
+note	*	Android Support Repository	large toolchain: use a workspace image
+note	*	Android Google Play services	large toolchain: use a workspace image
+note	*	Android Google Repository	large toolchain: use a workspace image
+note	*	Android NDK	large toolchain: use a workspace image
+note	*	Android CMake	large toolchain: use a workspace image
+note	*	ANDROID_HOME	no Android SDK
+note	*	ANDROID_NDK	no Android SDK
+note	*	ANDROID_NDK_HOME	no Android SDK
+note	*	ANDROID_NDK_LATEST_HOME	no Android SDK
+note	*	ANDROID_NDK_ROOT	no Android SDK
+note	*	ANDROID_SDK_ROOT	no Android SDK
+note	*	Cabal	large toolchain: haskell-actions/setup installs it
+note	*	GHC	large toolchain: haskell-actions/setup installs it
+note	*	GHCup	large toolchain: haskell-actions/setup installs it
+note	*	Stack	large toolchain: haskell-actions/setup installs it
+note	*	Swift	large toolchain: swift-actions/setup-swift installs it
+note	*	Julia	julia-actions/setup-julia installs it
+note	*	Kotlin	the Gradle and Maven plugins fetch it
+
+# Fetched by the action that uses it, in seconds.
+note	cached	PyPy	actions/setup-python downloads it
+note	cached	Ruby	ruby/setup-ruby downloads it (prebuilt, seconds)
+note	tool	CodeQL Action Bundle	github/codeql-action downloads the bundle its own version pins
+note	tool	Homebrew	not on PATH on GitHub either; install it in a step
+note	tool	Miniconda	conda-incubator/setup-miniconda installs it
+note	env	CONDA	no Miniconda
+note	tool	Vcpkg	lukka/run-vcpkg clones it
+note	env	VCPKG_INSTALLATION_ROOT	no vcpkg
+note	tool	PHP	shivammathur/setup-php installs it
+note	tool	Composer	shivammathur/setup-php installs it
+note	tool	PHPUnit	shivammathur/setup-php installs it
+note	tool	cpan	comes with Perl; cpanminus is one apt package away
+note	tool	AWS SAM CLI	aws-actions/setup-sam installs it
+note	tool	Azure CLI (azure-devops)	az extension add --name azure-devops
+note	tool	Bicep	az bicep install
+note	tool	AzCopy	not added yet: download in a step
+note	tool	Pulumi	pulumi/actions installs it
+note	tool	Packer	hashicorp/setup-packer installs it
+note	tool	Fastlane	a Ruby gem: gem install fastlane
+note	tool	Minikube	medyagh/setup-minikube installs it; kind is here
+note	tool	Bazel	`bazel` is Bazelisk, which fetches the version a repository pins
+note	tool	Lerna	npx lerna
+note	tool	Parcel	npx parcel
+note	tool	Newman	npx newman
+note	tool	n	actions/setup-node covers it
+note	tool	nvm	actions/setup-node covers it
+note	tool	Git-ftp	not added
+note	tool	Docker Amazon ECR Credential Helper	aws-actions/amazon-ecr-login covers it
+note	tool	Microsoft Edge	not added: Chrome, Firefox and Playwright cover browser tests
+note	tool	Microsoft Edge WebDriver	no Edge
+note	env	EDGEWEBDRIVER	no Edge
+note	tool	Chromium	Playwright's Chromium is in /ms-playwright
+note	tool	apache2	web servers: apt-get install in a step
+note	tool	nginx	web servers: apt-get install in a step
+note	tool	Az	PowerShell module: Install-Module in a step
+note	tool	Microsoft.Graph	PowerShell module: Install-Module in a step
+note	tool	Pester	PowerShell module: Install-Module in a step
+note	tool	PSScriptAnalyzer	PowerShell module: Install-Module in a step
