@@ -1,6 +1,6 @@
 # ci-ubuntu-24.04
 
-Use it with `zode/ci-ubuntu-24.04`. Version 20261112.10, published 2026-11-12 from commit [9978cb9](https://github.com/zodeops/runner-images/tree/9978cb9ac99675bfe464c7d663d7f0fe0afdf117/images/ci-ubuntu-24.04).
+Use it with `zode/ci-ubuntu-24.04`. Version 20261112.11.4, published 2026-11-12 from commit [f86367f](https://github.com/zodeops/runner-images/tree/f86367f76cdd41db7e8fbe28dd11edcee81f717e/images/ci-ubuntu-24.04).
 Sizes: 2x4, 4x8, 8x16, 16x32.
 
 Operating system: Ubuntu 24.04.5 LTS.
@@ -36,9 +36,9 @@ Written by the publish workflow from the software report in the image
 | PowerShell | 7.6.10 |
 | Python | 3.12.3 |
 | Ruby | 3.2.3 |
-| Rust | 1.99.1 |
-| Rustdoc | 1.99.1 |
-| Rustfmt | 1.10.0 |
+| Rust | 1.100.0 |
+| Rustdoc | 1.100.0 |
+| Rustfmt | 1.11.0 |
 
 ### Package managers
 
@@ -51,7 +51,7 @@ Written by the publish workflow from the software report in the image
 | pip | 24.0 |
 | pipx | 1.4.3 |
 | RubyGems | 3.4.20 |
-| Cargo | 1.99.1 |
+| Cargo | 1.100.0 |
 | Rustup | 1.29.3 |
 
 ### Build tools
@@ -179,7 +179,7 @@ Written by the publish workflow from the software report in the image
 | libssl-dev | 3.0.13-0ubuntu3.16 |
 | libtool | 2.4.7-7build1 |
 | libyaml-dev | 0.2.5-1build1 |
-| locales | 2.39-0ubuntu8.9 |
+| locales | 2.39-0ubuntu8.12 |
 | lz4 | 1.9.4-1build1.1 |
 | m4 | 1.4.19-4build1 |
 | make | 4.3-4.1build2 |
@@ -231,7 +231,7 @@ Written by the publish workflow from the software report in the image
 | `ACCEPT_EULA` | `Y` |
 | `CHROME_PATH` | `/usr/bin/google-chrome` |
 | `RUSTUP_HOME` | `/home/runner/.rustup` |
-| `ImageVersion` | `20261112.10` |
+| `ImageVersion` | `20261112.11.4` |
 | `GECKOWEBDRIVER` | `/usr/local/share/gecko_driver` |
 | `CHROMEWEBDRIVER` | `/usr/local/share/chromedriver-linux64` |
 | `GOROOT_1_24_X64` | `/opt/hostedtoolcache/go/1.24.13/x64` |
