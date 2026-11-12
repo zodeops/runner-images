@@ -455,6 +455,8 @@ fi
 ZODE_STEP
 
 # Behave like a GitHub runner:
+# - no background apt runs: a restored VM fires the daily apt timers and
+#   holds the apt lock while a job runs `sudo apt-get install`;
 # - PostgreSQL, MySQL and Redis installed but stopped and disabled, so
 #   service containers can bind 5432, 3306 and 6379;
 # - no DATABASE_URL / REDIS_URL pointing at those stopped servers;
@@ -463,6 +465,8 @@ ZODE_STEP
 RUN <<'ZODE_STEP'
 set -euxo pipefail
 systemctl disable --now postgresql redis-server mysql
+systemctl disable --now apt-daily.timer apt-daily-upgrade.timer unattended-upgrades.service || true
+systemctl mask apt-daily.service apt-daily-upgrade.service unattended-upgrades.service
 systemctl stop 'postgresql@*' || true
 sed -i '/^DATABASE_URL=/d; /^REDIS_URL=/d' /etc/environment
 sed -i '/DATABASE_URL=/d; /REDIS_URL=/d' /etc/profile.d/zode.sh
