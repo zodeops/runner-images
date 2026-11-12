@@ -121,7 +121,9 @@ ENV ImageOS=ubuntu24 \
 
 # Ubuntu packages, from the mirror the base image points apt at: the apt
 # list of GitHub's ubuntu-24.04 toolset plus the compilers, build tools,
-# Ruby, container tools and MySQL it carries. The package lists are kept so
+# Ruby, container tools and MySQL it carries, and the -dev libraries its
+# other installs pull in (libffi-dev for cffi wheels built from source on
+# new Pythons, zlib, libxml2, libpq, ...). The package lists are kept so
 # `sudo apt-get install` works in a job, as on GitHub.
 RUN <<'ZODE_STEP'
 set -euxo pipefail
@@ -153,6 +155,8 @@ apt-get install -y --no-install-recommends \
   systemd-coredump tar telnet texinfo time tk tree tzdata upx wget xvfb zsync \
   build-essential gfortran clang clang-format clang-tidy ninja-build cmake \
   ruby-full ant ant-optional podman buildah skopeo \
+  libffi-dev zlib1g-dev libbz2-dev liblzma-dev libreadline-dev libncurses-dev libgdbm-dev \
+  libxml2-dev libxslt1-dev libpq-dev libcurl4-openssl-dev libjpeg-dev libpng-dev libgmp-dev \
   mysql-server mysql-client libmysqlclient-dev
 git lfs install --system
 mysql -uroot -proot -e 'SELECT 1' >/dev/null

@@ -20,15 +20,15 @@ note	tool	Kernel Version	Zode runs its own VM kernel
 # Large toolchains belong in a workspace's own image (README, Contributing).
 note	*	.NET Core SDK	large toolchain: actions/setup-dotnet installs it, or use a workspace image
 note	*	nbgv	.NET tool: dotnet tool install
-note	*	Android Command Line Tools	large toolchain: use a workspace image
-note	*	Android SDK Build-tools	large toolchain: use a workspace image
-note	*	Android SDK Platform-Tools	large toolchain: use a workspace image
-note	*	Android SDK Platforms	large toolchain: use a workspace image
-note	*	Android Support Repository	large toolchain: use a workspace image
-note	*	Android Google Play services	large toolchain: use a workspace image
-note	*	Android Google Repository	large toolchain: use a workspace image
-note	*	Android NDK	large toolchain: use a workspace image
-note	*	Android CMake	large toolchain: use a workspace image
+note	tool	Android Command Line Tools	large toolchain: use a workspace image
+note	tool	Android SDK Build-tools	large toolchain: use a workspace image
+note	tool	Android SDK Platform-Tools	large toolchain: use a workspace image
+note	tool	Android SDK Platforms	large toolchain: use a workspace image
+note	tool	Android Support Repository	large toolchain: use a workspace image
+note	tool	Android Google Play services	large toolchain: use a workspace image
+note	tool	Android Google Repository	large toolchain: use a workspace image
+note	tool	Android NDK	large toolchain: use a workspace image
+note	tool	Android CMake	large toolchain: use a workspace image
 note	*	ANDROID_HOME	no Android SDK
 note	*	ANDROID_NDK	no Android SDK
 note	*	ANDROID_NDK_HOME	no Android SDK
