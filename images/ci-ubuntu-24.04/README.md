@@ -1,6 +1,6 @@
 # ci-ubuntu-24.04
 
-Use it with `zode/ci-ubuntu-24.04`. Version 20261113.13, published 2026-11-13 from commit [9019abd](https://github.com/zodeops/runner-images/tree/9019abd9b53fafea8d589d2929ba3a09451140ef/images/ci-ubuntu-24.04).
+Use it with `zode/ci-ubuntu-24.04`. Version 20261113.15, published 2026-11-13 from commit [70bc261](https://github.com/zodeops/runner-images/tree/70bc2616ba86f07c15b104392548eacf5fff695c/images/ci-ubuntu-24.04).
 Sizes: 2x4, 4x8, 8x16, 16x32.
 
 Operating system: Ubuntu 24.04.5 LTS.
@@ -231,7 +231,7 @@ Written by the publish workflow from the software report in the image
 | `ACCEPT_EULA` | `Y` |
 | `CHROME_PATH` | `/usr/bin/google-chrome` |
 | `RUSTUP_HOME` | `/home/runner/.rustup` |
-| `ImageVersion` | `20261113.13` |
+| `ImageVersion` | `20261113.15` |
 | `GECKOWEBDRIVER` | `/usr/local/share/gecko_driver` |
 | `CHROMEWEBDRIVER` | `/usr/local/share/chromedriver-linux64` |
 | `GOROOT_1_24_X64` | `/opt/hostedtoolcache/go/1.24.13/x64` |
