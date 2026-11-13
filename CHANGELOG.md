@@ -5,6 +5,11 @@ Changes to the lines, newest first. Each release's full software list is in
 
 ## Unreleased
 
+- `ci-ubuntu-24.04`: the `runner` user can write what GitHub's image leaves
+  writable (`/opt`, `/usr/share`, `/usr/lib/jvm`) and Playwright's browser
+  folder `/ms-playwright`, so `npx playwright install` works in a job
+  (setuid files keep their mode). The build fails if it cannot, and the
+  check workflow tests the published image the same way.
 - `ci-ubuntu-24.04`: parity with GitHub's `ubuntu-24.04` for common actions
   and workflows. Tool cache: Python 3.11, 3.14 and 3.15, Go 1.24.13, 1.25.14
   and 1.26.11 (1.24 is `go` on PATH, `GOROOT_*_X64` set), Temurin 8, 11 and 25

@@ -43,6 +43,25 @@ jobs:
       - name: actionlint
         run: docker run --rm -v "$PWD:/repo" -w /repo "$ACTIONLINT_IMAGE" -color
 
+      # Jobs run as the runner user: every path GitHub's ubuntu-24.04 leaves
+      # writable (and Playwright's browser folder) must be writable here too.
+      # This job runs on the published ci-ubuntu-24.04, so it catches a
+      # release that ships one of them root-owned.
+      - name: The runner user can write GitHub's writable paths
+        run: |
+          id -un
+          pw=${PLAYWRIGHT_BROWSERS_PATH:-/ms-playwright}
+          fail=0
+          for d in /opt /usr/share /usr/lib/jvm "$pw" "$RUNNER_TOOL_CACHE" /usr/local/lib/node_modules /usr/local/bin; do
+            if mkdir "$d/.zode-write-check-$$" && rmdir "$d/.zode-write-check-$$"; then
+              echo "ok   $d"
+            else
+              echo "::error::the runner user cannot write $d"
+              fail=1
+            fi
+          done
+          exit "$fail"
+
       - name: Software report smoke test
         run: |
           out=$(bash scripts/software-report.sh)

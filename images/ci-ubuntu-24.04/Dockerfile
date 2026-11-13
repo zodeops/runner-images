@@ -503,6 +503,35 @@ apt-get clean
 rm -rf /tmp/* /root/.cache/pip /root/.cache/pipx
 ZODE_STEP
 
+# What GitHub's image leaves writable for jobs (configure-system.sh and
+# friends: chmod -R 777 /opt, /usr/share, /usr/lib/jvm), plus Playwright's
+# browsers: PLAYWRIGHT_BROWSERS_PATH is /ms-playwright here, and
+# `playwright install` takes its lock and adds browsers there. Setuid and
+# setgid files (Chrome's sandbox) keep their mode. Last, so nothing above
+# adds root-only files after it; the check fails the build when the runner
+# user cannot write one of them.
+RUN <<'ZODE_STEP'
+set -euxo pipefail
+pw=${PLAYWRIGHT_BROWSERS_PATH:-/ms-playwright}
+mkdir -p "$pw"
+writable=(/opt /usr/share /usr/lib/jvm "$pw")
+find "${writable[@]}" -xdev \( -type d -o -type f \) ! -perm /6000 -exec chmod a+rwX {} +
+check=("${writable[@]}" "$RUNNER_TOOL_CACHE" /opt/pipx /usr/local/lib/node_modules /usr/local/bin)
+shopt -s nullglob
+for d in "$pw"/*/ /usr/lib/jvm/*/; do check+=("${d%/}"); done
+[ ! -d /usr/share/dotnet ] || check+=(/usr/share/dotnet)
+fail=0
+for d in "${check[@]}"; do
+  if runuser -u runner -- mkdir "$d/.zode-write-check" && runuser -u runner -- rmdir "$d/.zode-write-check"; then
+    echo "runner can write $d"
+  else
+    echo "runner cannot write $d" >&2
+    fail=1
+  fi
+done
+[ "$fail" = 0 ]
+ZODE_STEP
+
 # The software report (scripts/software-report.sh), installed as
 # /usr/local/bin/zode-software-report.
 RUN <<'ZODE_STEP'
