@@ -1,6 +1,6 @@
 # ci-ubuntu-24.04 compared with GitHub's ubuntu-24.04
 
-Zode `ci-ubuntu-24.04` 20261113.12 against GitHub `ubuntu24/20261111.370`, from both images' own
+Zode `ci-ubuntu-24.04` 20261113.13 against GitHub `ubuntu24/20261111.370`, from both images' own
 software reports. Written by `scripts/parity.sh` with every release; do not
 edit it by hand. Why something is left out: `images/ci-ubuntu-24.04/parity.tsv`.
 
@@ -111,7 +111,7 @@ Every apt package GitHub lists is installed.
 
 ## Only on Zode
 
-Go 1.24.13, pnpm 12.18.0, Bun 1.4.4, GitHub Actions runner 2.338.2, rsync 3.2.7, OpenSSH 9.6, curl 8.5.0, ShellCheck 0.9.0, Redis 7.0.15, stopped, Playwright 1.65.0, Java (Temurin) 8.0.512-9, 11.0.33-10, 17.0.21-9, 21.0.13-9, 25.0.5-8, ImageOS ubuntu24, JAVA_HOME /usr/lib/jvm/temurin-17-jdk-amd64, CARGO_HOME /home/runner/.cargo, ACCEPT_EULA Y, CHROME_PATH /usr/bin/google-chrome, RUSTUP_HOME /home/runner/.rustup, ImageVersion 20261113.12, GOROOT_1_24_X64 /opt/hostedtoolcache/go/1.24.13/x64, GOROOT_1_25_X64 /opt/hostedtoolcache/go/1.25.14/x64, GOROOT_1_26_X64 /opt/hostedtoolcache/go/1.26.11/x64, RUNNER_TOOL_CACHE /opt/hostedtoolcache, AGENT_TOOLSDIRECTORY /opt/hostedtoolcache, PLAYWRIGHT_BROWSERS_PATH /ms-playwright.
+Go 1.24.13, pnpm 12.18.0, Bun 1.4.4, GitHub Actions runner 2.338.2, rsync 3.2.7, OpenSSH 9.6, curl 8.5.0, ShellCheck 0.9.0, Redis 7.0.15, stopped, Playwright 1.65.0, Java (Temurin) 8.0.512-9, 11.0.33-10, 17.0.21-9, 21.0.13-9, 25.0.5-8, ImageOS ubuntu24, JAVA_HOME /usr/lib/jvm/temurin-17-jdk-amd64, CARGO_HOME /home/runner/.cargo, ACCEPT_EULA Y, CHROME_PATH /usr/bin/google-chrome, RUSTUP_HOME /home/runner/.rustup, ImageVersion 20261113.13, GOROOT_1_24_X64 /opt/hostedtoolcache/go/1.24.13/x64, GOROOT_1_25_X64 /opt/hostedtoolcache/go/1.25.14/x64, GOROOT_1_26_X64 /opt/hostedtoolcache/go/1.26.11/x64, RUNNER_TOOL_CACHE /opt/hostedtoolcache, AGENT_TOOLSDIRECTORY /opt/hostedtoolcache, PLAYWRIGHT_BROWSERS_PATH /ms-playwright.
 
 <details><summary>Same on both (131)</summary>
 
