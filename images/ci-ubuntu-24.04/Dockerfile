@@ -95,11 +95,14 @@ ARG ANSIBLE_CORE_VERSION=2.21.6
 ARG RUSTUP_VERSION=1.29.3
 ARG RUSTUP_SHA256=b1c8cb14e30889e7e2999e6b69e62d9e9b9ffc0f4df8180564d306d9680e6c55
 ARG RUST_TOOLCHAIN=stable
-# Install hook for zode-ci, the test wrapper (zodeops/zoded cmd/zode-ci).
-# Empty: not installed. Set the URL of a release binary (api.zode.dev/dl)
-# and its sha256 to put it at /usr/local/bin/zode-ci.
-ARG ZODE_CI_URL=
-ARG ZODE_CI_SHA256=
+# zode-ci, the test wrapper (zodeops/zoded cmd/zode-ci): one pinned build,
+# released in this repository as zode-ci/<zoded commit> with its checksums,
+# so an image always carries the same binary. Bump both lines together.
+# The control plane still swaps in its own build at job start when the API's
+# differs (zoded docs/zode-ci-interface.md), since the selection protocol
+# moves with the API.
+ARG ZODE_CI_URL=https://github.com/zodeops/runner-images/releases/download/zode-ci/027b609/zode-ci-linux-amd64
+ARG ZODE_CI_SHA256=d92eda8e0298a1bb32b7cc3130c2bbbfc473de61fd507fcd81fb44989fffa653
 
 ENV ImageOS=ubuntu24 \
     ImageVersion=${IMAGE_VERSION} \
@@ -412,20 +415,6 @@ yamllint --version | grep "${YAMLLINT_VERSION}" >/dev/null
 ansible --version | grep "core ${ANSIBLE_CORE_VERSION}" >/dev/null
 ZODE_STEP
 
-# zode-ci, Zode's test wrapper (`zode-ci test -- <command>`, docs/zode-ci-interface.md
-# in zodeops/zoded): the static binary the control plane serves, checked
-# against the SHA256SUMS it serves beside it.
-RUN <<'ZODE_STEP'
-set -euxo pipefail
-base=https://api.zode.dev/dl
-curl -fsSL --retry 6 --retry-delay 5 --retry-all-errors --connect-timeout 20 -o /tmp/zode-ci "$base/zode-ci-linux-amd64"
-curl -fsSL --retry 6 --retry-delay 5 --retry-all-errors --connect-timeout 20 -o /tmp/zode-ci.sums "$base/SHA256SUMS"
-echo "$(grep ' zode-ci-linux-amd64$' /tmp/zode-ci.sums | cut -d' ' -f1)  /tmp/zode-ci" | sha256sum -c -
-install -m 0755 /tmp/zode-ci /usr/local/bin/zode-ci
-rm -f /tmp/zode-ci /tmp/zode-ci.sums
-zode-ci version
-ZODE_STEP
-
 # Rust through rustup lives in the runner user's home, as on GitHub. Root
 # (and a control plane that still starts the runner as root) uses it too.
 ENV CARGO_HOME=/home/runner/.cargo \
@@ -473,13 +462,12 @@ printf '%s\n' vm.max_map_count=262144 fs.inotify.max_user_watches=655360 \
 sysctl -p /etc/sysctl.d/60-github-runner.conf
 [ "$(sysctl -n vm.max_map_count)" = 262144 ]
 
-if [ -n "${ZODE_CI_URL}" ]; then
-  dl "$ZODE_CI_URL" /tmp/zode-ci
-  echo "$ZODE_CI_SHA256  /tmp/zode-ci" | sha256sum -c -
-  install -m 0755 /tmp/zode-ci /usr/local/bin/zode-ci
-  rm -f /tmp/zode-ci
-  zode-ci --version
-fi
+# zode-ci (`zode-ci test -- <command>`), the pinned build above.
+dl "$ZODE_CI_URL" /tmp/zode-ci
+echo "$ZODE_CI_SHA256  /tmp/zode-ci" | sha256sum -c -
+install -m 0755 /tmp/zode-ci /usr/local/bin/zode-ci
+rm -f /tmp/zode-ci
+zode-ci version
 ZODE_STEP
 
 # Behave like a GitHub runner:
